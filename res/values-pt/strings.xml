@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">Sobre</string>
+    <string name="FileCount">Número de ficheiro</string>
+    <string name="ExcludedFiles">Arquivos Excluídos</string>
+    <string name="directory">Diretório</string>
+    <string name="FileSort">Ordenar Arquivo</string>
+    <string name="Cancel">Cancelar</string>
+    <string name="Refresh">Refrescar</string>
+    <string name="Okay">Ok</string>
+    <string name="ChangeDirectoryDialog">Selecione Pasta de Pesquisa</string>
+    <string name="ChangeFileSortingDialog">Selecione opção de Classificação de Arquivo</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">Maior</string>
+    <string name="Smallest">Menor</string>
+    <string name="External">Externo</string>
+    <string name="Root">Raiz</string>
+    <string name="Settings">Configurações</string>
+    <string name="Advanced">Avançado</string>
+    <string name="GENERAL">GERAL</string>
+    <string name="ADVANCED">AVANÇADO</string>
+
+    <string-array name="Sorting">
+        <item>Classificar por Maiores Arquivos</item>
+        <item>Classificar por Arquivos Menores</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>Externo</item>
+        <item>Raiz</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>Sempre</item>
+        <item>De Hora em Hora</item>
+        <item>Diário</item>
+        <item>Semanal</item>
+        <item>A Cada Duas Semanas</item>
+    </string-array>
+
+    <string name="Searching">Pesquisando Arquivos&#8230;</string>
+    <string name="ReleaseOfLiability">Único propósito Hog arquivo é identificar arquivos
+		em um dispositivo Android por tamanho. Quaisquer decisões tomadas ou
+		ações tomadas por um usuário com base em informações provenientes de
+		Hog Arquivo, e todas e quaisquer conseqüências daí, incluindo, mas não
+		limitado a decisões para excluir arquivos particulares, são de inteira
+		responsabilidade do usuário.
+
+		Ao fazer o download Hog arquivo, o usuário fica lançamentos e desobriga
+		os desenvolvedores, donos e gerentes de Hog arquivo, seus herdeiros,
+		sucessores e cessionários de todas e quaisquer reivindicações, causas
+		de ação, danos, sentenças, custos, despesas ou demandas, de direito ou
+		equidade, que o usuário, seus herdeiros, sucessores e cessionários já
+		teve, agora ou no futuro pode, deve ou pode ter contra os
+		desenvolvedores, proprietários ou gerentes de Hog arquivo para, sobre
+		ou em razão de qualquer matéria, causa ou coisa qualquer.</string>
+    <string name="ResearchFrequency">Freqüência de Pesquisa</string>
+
+</resources>

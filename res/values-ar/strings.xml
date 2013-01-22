@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">من نحن</string>
+    <string name="FileCount">عدد الملفات</string>
+    <string name="ExcludedFiles">استبعاد الملفات</string>
+    <string name="Directory">ملف دليل</string>
+    <string name="FileSort">ملف ترتيب</string>
+    <string name="Cancel">إلغاء</string>
+    <string name="Refresh">تحديث قائمة</string>
+    <string name="Okay">حسنا</string>
+    <string name="ChangeDirectoryDialog">حدد مجلد بحث</string>
+    <string name="ChangeFileSortingDialog">حدد ملف الخيار الفرز</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">أكبر</string>
+    <string name="Smallest">أصغر</string>
+    <string name="External">خارجي</string>
+    <string name="Root">جذر</string>
+    <string name="Settings">إعدادات</string>
+    <string name="Advanced">متقدم</string>
+    <string name="GENERAL">عام</string>
+    <string name="ADVANCED">متقدم</string>
+
+    <string-array name="Sorting">
+        <item>حسب أكبر الملفات</item>
+        <item>حسب أصغر ملفات</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>خارجي</item>
+        <item>جذر</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>دائما</item>
+        <item>كل ساعة</item>
+        <item>يوميا</item>
+        <item>الأسبوعية</item>
+        <item>مرة كل أسبوعين</item>
+    </string-array>
+
+    <string name="Searching">البحث في الملفات&#8230;</string>
+    <string name="ReleaseOfLiability">الغرض الوحيد FileHog هو تحديد الملفات على جهاز
+		Android من حيث الحجم. اتخاذ أية قرارات أو إجراءات اتخذت من قبل
+		المستخدم بناء على المعلومات المستقاة من FileHog، وأي وجميع عواقب منها،
+		بما في ذلك سبيل المثال لا الحصر قرارات لحذف ملفات معينة، هي مسؤولية
+		المستخدم. &#10;&#10;عن طريق تحميل FileHog، وبموجب هذا العضو النشرات
+		والتصريف للمطورين وأصحاب ومديري FileHog، ورثتهم أو خلفائهم والمتنازل
+		لهم من أي وجميع المطالبات، لأسباب العمل والأضرار والأحكام والتكاليف
+		والنفقات أو مطالب، في القانون أو الإنصاف، التي المستخدم، ورثتهم، ويعين
+		خلفاء من أي وقت مضى وكان، الآن أو فيما بعد، يمكن أن يكون، أو قد يكون
+		ضد المطورين، وأصحاب أو مديري FileHog ل، بناء على أو بسبب أي سبب، أو
+		شيء على الإطلاق المسألة.</string>
+    <string name="ResearchFrequency">البحث التردد</string>
+
+</resources>

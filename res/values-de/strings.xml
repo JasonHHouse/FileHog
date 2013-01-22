@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">über</string>
+    <string name="FileCount">Datei-Zählen</string>
+    <string name="ExcludedFiles">Ausgeschlossene Dateien</string>
+    <string name="Directory">Verzeichnis</string>
+    <string name="FileSort">Datei Art</string>
+    <string name="Cancel">Kündigen</string>
+    <string name="Refresh">Auffrischen</string>
+    <string name="Okay">Zustimmen</string>
+    <string name="ChangeDirectoryDialog">Wählen Sie Suchordner</string>
+    <string name="ChangeFileSortingDialog">Wählen Sie Datei Sortierung Option</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">Höchste</string>
+    <string name="Smallest">Kleinste</string>
+    <string name="External">Extern</string>
+    <string name="Root">Wurzel</string>
+    <string name="Settings">Einstellungen</string>
+    <string name="Advanced">Fortgeschritten</string>
+    <string name="GENERAL">GENERELL</string>
+    <string name="ADVANCED">FORTGESCHRITTEN</string>
+
+    <string-array name="Sorting">
+        <item>Sortieren nach größten Dateien</item>
+        <item>Sortieren nach kleinsten Dateien</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>Extern</item>
+        <item>Wurzel</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>Immer</item>
+        <item>Stündlich</item>
+        <item>Täglich</item>
+        <item>Wöchentlich</item>
+        <item>Zweiwöchentlich</item>
+    </string-array>
+
+    <string name="Searching">Suchen von Dateien&#8230;</string>
+    <string name="ReleaseOfLiability">Datei Hog alleiniger Zweck es ist, Dateien auf einem Android-Gerät zu identifizieren, indem Größe. Alle Entscheidungen oder Aktionen der Nutzer auf Informationen aus Datei Hog abgeleitet genommen und sämtliche Folgen daraus, einschließlich, aber nicht für Entscheidungen beschränkt auf bestimmte Dateien zu löschen, sind die alleinige Verantwortung des Benutzers.  &#10;&#10;Durch das Herunterladen Datei Hog, der Nutzer entbindet und entlädt die Entwickler, Eigentümer und Manager von File Hog, deren Erben, Nachfolger und Abtretungsempfänger von sämtlichen Ansprüchen, Klagen, Schäden, Urteile, Kosten, Aufwendungen oder Forderungen, die rechtlich oder Aktien, die der User, deren Erben, Nachfolger und Rechtsnachfolger je hatte, jetzt oder in Zukunft können, müssen oder dürfen gegen die Entwickler, Eigentümer oder Geschäftsführer von File Hog, um, auf oder wegen einer Sache, Ursache oder was auch immer haben.</string>
+    <string name="ResearchFrequency">Forschungs-Frequenz</string>
+
+</resources>
