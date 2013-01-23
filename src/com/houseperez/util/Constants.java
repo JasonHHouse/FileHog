@@ -4,7 +4,7 @@ public class Constants {
 
 	// Constants
 	public static final boolean debugOn = false;
-	public static final double VERSION = 2.06;
+	public static final double VERSION = 2.07;
 	public static final int MAX_FILE_COUNT = 50;
 	public static final int STARTING_FILE_COUNT = 10;
 	public static final String STR_STRING = "Settings";

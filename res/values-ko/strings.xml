@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">약</string>
+    <string name="FileCount">백작님을 파일</string>
+    <string name="ExcludedFiles">제외 된 파일</string>
+    <string name="Cancel">취소</string>
+    <string name="Refresh">새롭게하다</string>
+    <string name="Okay">좋아요</string>
+    <string name="ChangeDirectoryDialog">검색 폴더를 선택</string>
+    <string name="ChangeFileSortingDialog">파일 정렬 옵션을 선택합니다</string>
+    <string name="Directory">디렉토리 검색</string>
+    <string name="FileSort">정렬을 제기</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">최대</string>
+    <string name="Smallest">최소</string>
+    <string name="External">외부</string>
+    <string name="Root">뿌리</string>
+    <string name="Settings">설정</string>
+    <string name="Advanced">고급</string>
+    <string name="GENERAL">일반</string>
+    <string name="ADVANCED">고급</string>
+
+    <string-array name="Sorting">
+        <item>가장 큰 파일을 기준으로 정렬</item>
+        <item>작은 파일을 기준으로 정렬</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>외부</item>
+        <item>뿌리</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>항상</item>
+        <item>시간별</item>
+        <item>일간 신문</item>
+        <item>주간</item>
+        <item>격주</item>
+    </string-array>
+
+    <string name="Searching">검색 파일&#8230;</string>
+    <string name="ReleaseOfLiability">FileHog의 유일한 목적은 크기에 따라 Android 기기에서 파일을 식별하는 것입니다. 모든 결정은 만든 또는 FileHog에서 파생 된 정보를 기반으로 사용자가 수행 한 작업, 그리고 어떠한 그로부터 모든 결과를 포함하되 특정 파일을 삭제하는 결정에 국한되지는 사용자의 책임입니다.  &#10;&#10;FileHog을 다운로드하여, 사용자가 본인 자료와 배출 개발자, 소유자 및 관리자 FileHog의 자신의 상속인, 승계인 및 법률이나 주식에있는 모든 청구, 행동의 원인, 손해, 판결, 비용, 경비 또는 요구에서 양수인, 어떤 사용자는 자신의 상속인, 승계인 및 양수인 본 지금이 있었다 또는 이하, 또는시 또는 문제, 원인이나 어떠한 일을 이유로위한 FileHog의 개발자, 소유자 또는 관리자에 대한 수 있습니다한다 할 수 있습니다.</string>
+    <string name="ResearchFrequency">연구 주파수</string>
+
+</resources>

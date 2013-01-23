@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">के बारे में</string>
+    <string name="FileCount">गणना फ़ाइल</string>
+    <string name="ExcludedFiles">अपवर्जित फ़ाइलें</string>
+    <string name="Cancel">रद्द करें</string>
+    <string name="Refresh">ताज़ा करना</string>
+    <string name="Okay">अच्छा</string>
+    <string name="ChangeDirectoryDialog">खोज फ़ोल्डर का चयन करें</string>
+    <string name="ChangeFileSortingDialog">चुनें फ़ाइल क्रमित कर रहा है विकल्प</string>
+    <string name="Directory">खोज निर्देशिका</string>
+    <string name="FileSort">क्रमित कर रहा है फ़ाइल</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">सबसे बड़ा</string>
+    <string name="Smallest">सबसे छोटा</string>
+    <string name="External">बाहरी</string>
+    <string name="Root">जड़</string>
+    <string name="Settings">सेटिंग्स</string>
+    <string name="Advanced">उन्नत</string>
+    <string name="GENERAL">आम</string>
+    <string name="ADVANCED">उन्नत</string>
+
+    <string-array name="Sorting">
+        <item>सबसे बड़ी फ़ाइलें के आधार पर छाँटें</item>
+        <item>सबसे छोटा फ़ाइलें के आधार पर छाँटें</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>बाहरी</item>
+        <item>जड़</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>सदैव</item>
+        <item>घंटेवार</item>
+        <item>दैनिक</item>
+        <item>साप्ताहिक</item>
+        <item>द्वि - साप्ताहिक</item>
+    </string-array>
+
+    <string name="Searching">खोज फ़ाइलें&#8230;</string>
+    <string name="ReleaseOfLiability">है FileHog एकमात्र उद्देश्य के लिए एक Android डिवाइस पर आकार से फाइलों की पहचान है. किसी भी निर्णय किया है या FileHog से प्राप्त जानकारी के आधार पर एक उपयोगकर्ता द्वारा की गई कार्रवाई, और किसी भी और सभी परिणामों उधर, सहित, लेकिन सीमित निर्णय के लिए विशेष रूप से फ़ाइलों को नष्ट करने के लिए नहीं, उपयोगकर्ता का एकमात्र जिम्मेदारी है.  &#10;&#10;डाउनलोड करके FileHog, उपयोगकर्ता एतद्द्वारा विज्ञप्ति और निर्वहन डेवलपर्स, मालिकों और FileHog के प्रबंधकों, उनके वारिस, उत्तराधिकारियों और किसी भी और सभी का दावा है, कार्रवाई के कारणों, नुकसान, निर्णय, लागत, कानून या इक्विटी में खर्च या मांगों से प्रदान करती है, जो उपयोगकर्ता उनके वारिस, उत्तराधिकारियों और प्रदान करती है कभी, अब किया था या इसके बाद, या हो सकता है सकते हैं होगा डेवलपर्स, मालिकों या FileHog के प्रबंधकों के लिए पर या किसी भी मामले के कारण, या जो भी बात की वजह से, के खिलाफ है.</string>
+    <string name="ResearchFrequency">अनुसंधान आवृत्ति</string>
+
+</resources>

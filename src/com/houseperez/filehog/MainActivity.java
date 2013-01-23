@@ -132,6 +132,11 @@
  * Fixed the seekbar not updating bug
  * Made the app Holo after requests
  * Fixed the updating issues
+ * 
+ * Revision v 2.07
+ * 
+ * Language pack updated with Hindi, Korean, Polish, French, Russian
+ * 
  */
 
 package com.houseperez.filehog;

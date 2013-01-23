@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">о</string>
+    <string name="FileCount">Количество файлов</string>
+    <string name="ExcludedFiles">Исключенные файлы</string>
+    <string name="Cancel">отменить</string>
+    <string name="Refresh">обновление</string>
+    <string name="Okay">хорошо</string>
+    <string name="ChangeDirectoryDialog">Выберите папку поиска</string>
+    <string name="ChangeFileSortingDialog">Выберите вариант сортировки файлов</string>
+    <string name="Directory">Поиск в каталоге</string>
+    <string name="FileSort">сортировка файлов</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">Крупнейшая</string>
+    <string name="Smallest">Наименьшие</string>
+    <string name="External">внешний</string>
+    <string name="Root">корень</string>
+    <string name="Settings">настройки</string>
+    <string name="Advanced">передовой</string>
+    <string name="GENERAL">ОБЩИЕ</string>
+    <string name="ADVANCED">передовой</string>
+
+    <string-array name="Sorting">
+        <item>Сортировать по Крупнейшая файлов</item>
+        <item>Сортировать по Наименьший файлов</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>внешний</item>
+        <item>корень</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>всегда</item>
+        <item>почасовой</item>
+        <item>ежедневно</item>
+        <item>еженедельно</item>
+        <item>раз в две недели</item>
+    </string-array>
+
+    <string name="Searching">Поиск файлов&#8230;</string>
+    <string name="ReleaseOfLiability">Единственная цель FileHog в том, чтобы идентифицировать файлы на устройстве Android по размеру. Любые решения, принимаемые или действия, предпринятые пользователей на основе информации, полученной из FileHog, и любые последствия от них, включая, но не ограничиваясь решения, чтобы удалить определенные файлы, являются исключительной ответственностью пользователя.  &#10;&#10;Скачивая FileHog, Пользователь тем самым выбросы и сбросы разработчиков, владельцев и менеджеров FileHog, их наследников и правопреемников от любых и всех претензий, исков, убытков, судебных решений, затрат, расходов и требований, в законе или справедливости, которые Пользователь, их наследников и правопреемников когда-либо имел, теперь или в будущем, может, должен или может иметь против разработчиков, владельцев или менеджеров для FileHog, или по причине любого вопроса, причина или вещь вообще.</string>
+    <string name="ResearchFrequency">Исследование частоты</string>
+
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="About">o</string>
+    <string name="FileCount">Ilość Plików</string>
+    <string name="ExcludedFiles">Wykluczone Pliki</string>
+    <string name="Cancel">Anulować</string>
+    <string name="Refresh">Refresh</string>
+    <string name="Okay">Dobrze</string>
+    <string name="ChangeDirectoryDialog">Wybierz Skoroszyt Wyszukiwania</string>
+    <string name="ChangeFileSortingDialog">Wybierz Opcję Sortowania Plików</string>
+    <string name="Directory">Przeszukaj Katalog</string>
+    <string name="FileSort">Sortowanie Plików</string>
+    <string name="app_name">FileHog</string>
+    <string name="Largest">Największy</string>
+    <string name="Smallest">Najmniejszy</string>
+    <string name="External">Zewnętrzny</string>
+    <string name="Root">Korzeń</string>
+    <string name="Settings">Ustawienia</string>
+    <string name="Advanced">zaawansowany</string>
+    <string name="GENERAL">OGÓLNE</string>
+    <string name="ADVANCED">ZAAWANSOWANY</string>
+
+    <string-array name="Sorting">
+        <item>Sortować Według Największych Plików</item>
+        <item>Sortować Według Najmniejszych Plików</item>
+    </string-array>
+    <string-array name="Directory">
+        <item>Zewnętrzny</item>
+        <item>Korzeń</item>
+    </string-array>
+    <string-array name="ResearchFrequencyItems">
+        <item>Zawsze</item>
+        <item>Po Godzinach</item>
+        <item>Codziennie</item>
+        <item>Tygodniowy</item>
+        <item>Bi-Tygodniowy</item>
+    </string-array>
+
+    <string name="Searching">Poszukiwanie Plików&#8230;</string>
+    <string name="ReleaseOfLiability">Jedynym celem FileHog jest do identyfikacji plików na urządzeniu z systemem Android według wielkości. Wszelkie decyzje podejmowane lub działania podejmowane przez Użytkownika w oparciu o informacje pochodzące z FileHog i wszelkie konsekwencje z niego, w tym, ale nie ogranicza się do decyzji, aby usunąć określone pliki są na wyłączną odpowiedzialność Użytkownika.  &#10;&#10;Pobierając FileHog, Użytkownik przyjmuje do wydawnictwa i zrzuty deweloperzy, właściciele i menedżerowie FileHog, ich spadkobierców, następców i cesjonariuszy od wszelkich roszczeń, powództwem, szkód, wyroków, kosztów, wydatków lub żądaniami, w prawa lub zasad słuszności, Użytkownik, który, ich spadkobiercy, następcy i przypisuje kiedykolwiek mieliśmy, teraz lub w przyszłości może, są lub mogą mieć wobec deweloperów, właścicieli lub zarządców FileHog dla, na lub z powodu każdej materii, przyczynę lub rzeczą ogóle.</string>
+    <string name="ResearchFrequency">Częstotliwość Badania</string>
+
+</resources>
