@@ -84,10 +84,10 @@ public class SettingsActivity extends Activity {
 			break;
 		}
 
-		if (settings.isFindBiggestFiles())
+		/*if (settings.isFindBiggestFiles())
 			((RadioButton) findViewById(R.id.rdoLargest)).setChecked(true);
 		else
-			((RadioButton) findViewById(R.id.rdoSmallest)).setChecked(true);
+			((RadioButton) findViewById(R.id.rdoSmallest)).setChecked(true);*/
 	}
 
 	@Override
@@ -184,7 +184,7 @@ public class SettingsActivity extends Activity {
 	}
 
 	public void onFileSortRadioButtonClicked(View view) {
-		boolean checked = ((RadioButton) view).isChecked();
+		/*boolean checked = ((RadioButton) view).isChecked();
 
 		// Check which radio button was clicked
 		switch (view.getId()) {
@@ -198,7 +198,7 @@ public class SettingsActivity extends Activity {
 			break;
 		}
 		FileIO.writeObject(settings, getApplicationContext(),
-				Constants.SETTINGS_FILE);
+				Constants.SETTINGS_FILE);*/
 	}
 
 }

@@ -149,49 +149,47 @@ import java.util.Date;
 
 import com.houseperez.util.*;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.AlertDialog;
-import android.app.ListActivity;
+
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends FragmentActivity {
 
 	public static final String TAG = "MainActivity";
 
 	// Globals
 	private HogFileList biggestHogFiles;
 	private HogFileList smallestHogFiles;
-
 	private long totalFileCount;
-	private File clickedFile;
-	private ListView listView;
 	private ProgressDialog progressDialog;
 	private AlertDialog countingFilesDialog;
 	private AlertDialog releaseOfLiabilityDialog;
 	private AlertDialog researchFrequencyDialog;
-	private Thread t;
 	private boolean threadRunning;
 	private long currentFileCount;
 	private Settings settings;
 	private boolean needToRefreshList;
+	private SectionsPagerAdapter mSectionsPagerAdapter;
+	private ViewPager mViewPager;
+	private ListView listView;
 
 	public void terminate() {
 		threadRunning = false;
@@ -205,7 +203,16 @@ public class MainActivity extends ListActivity {
 
 		checkVersion();
 
-		listView = getListView();
+		// Create the adapter that will return a fragment for each of the three
+		// primary sections of the app.
+		mSectionsPagerAdapter = new SectionsPagerAdapter(
+				getSupportFragmentManager());
+
+		// Set up the ViewPager with the sections adapter.
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setAdapter(mSectionsPagerAdapter);
+
+		// listView = getListView();
 
 	}
 
@@ -281,44 +288,6 @@ public class MainActivity extends ListActivity {
 	}
 
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
-		String strFile = ((String) l.getItemAtPosition((int) id));
-		strFile = strFile.substring(strFile.indexOf("/"),
-				strFile.lastIndexOf("Size: ") - 1);
-
-		Log.i(TAG, "onListItemClick strFile: " + strFile);
-
-		if (settings.isFindBiggestFiles()) {
-			for (Pair pair : biggestHogFiles.getHogFiles()) {
-				if (pair.getFile().getAbsoluteFile().toString().equals(strFile)) {
-					Log.i(TAG, "Found file in biggestHogFiles.");
-					clickedFile = pair.getFile();
-					break;
-				}
-			}
-		} else {
-			for (Pair pair : smallestHogFiles.getHogFiles()) {
-				if (pair.getFile().getAbsoluteFile().toString().equals(strFile)) {
-					Log.i(TAG, "Found file in smallestHogFiles.");
-					clickedFile = pair.getFile();
-					break;
-				}
-			}
-		}
-
-		// Check if they want to delete file or view it
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("Would you like to delete or view the file?")
-				.setPositiveButton("Delete",
-						dialogClickListener_DeleteCopyOrExclude)
-				.setNegativeButton("Copy",
-						dialogClickListener_DeleteCopyOrExclude)
-				.setNeutralButton("Exclude",
-						dialogClickListener_DeleteCopyOrExclude).show();
-
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
@@ -333,12 +302,298 @@ public class MainActivity extends ListActivity {
 			return true;
 		case R.id.Refresh:
 			needToRefreshList = true;
-			t = new Thread();
-			refresh(t);
+			refresh();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void onClick_ExcludeFiles() {
+		ArrayList<File> mergedExcludedFiles = new ArrayList<File>();
+		String strTitle = "";
+
+		switch (settings.getSelectedSearchDirectory()) {
+		case Settings.EXTERNAL_DIRECTORY:
+			// if (isBiggestFiles) {
+			mergedExcludedFiles.addAll(settings
+					.getBiggestExternalExcludedHogFiles());
+			strTitle = "Excluded Biggest External Directory Files";
+			// } else {
+			mergedExcludedFiles.addAll(settings
+					.getSmallestExternalExcludedHogFiles());
+			strTitle = "Excluded Smallest External Directory Files";
+			// }
+			break;
+		case Settings.ROOT_DIRECTORY:
+			// if (isBiggestFiles) {
+			mergedExcludedFiles.addAll(settings
+					.getBiggestRootExcludedHogFiles());
+			strTitle = "Excluded Biggest Root Directory Files";
+			// } else {
+			mergedExcludedFiles.addAll(settings
+					.getSmallestRootExcludedHogFiles());
+			strTitle = "Excluded Smallest Root Directory Files";
+			// }
+			break;
+		}
+
+		String[] excludedFiles = new String[mergedExcludedFiles.size()];
+
+		final boolean[] mSelectedItems = new boolean[mergedExcludedFiles.size()];
+
+		for (int i = 0; i < mergedExcludedFiles.size(); i++) {
+			excludedFiles[i] = mergedExcludedFiles.get(i).getAbsoluteFile()
+					.toString();
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(strTitle)
+
+				.setMultiChoiceItems(excludedFiles, null,
+						new DialogInterface.OnMultiChoiceClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which, boolean isChecked) {
+								if (isChecked) {
+									mSelectedItems[which] = true;
+								} else if (mSelectedItems[which] == true) {
+									mSelectedItems[which] = false;
+								}
+							}
+						})
+				.setPositiveButton("Remove",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int id) {
+								boolean shouldRemove = false;
+								for (boolean selectedItem : mSelectedItems) {
+									if (selectedItem) {
+										shouldRemove = true;
+										break;
+									}
+								}
+								if (shouldRemove) {
+									for (int i = mSelectedItems.length - 1; i >= 0; i--)
+										if (mSelectedItems[i] == true)
+											switch (settings
+													.getSelectedSearchDirectory()) {
+											case Settings.EXTERNAL_DIRECTORY:
+												// if (isBiggestFiles)
+												settings.getBiggestExternalExcludedHogFiles()
+														.remove(i);
+												// else
+												settings.getSmallestExternalExcludedHogFiles()
+														.remove(i);
+
+												break;
+											case Settings.ROOT_DIRECTORY:
+												// if (isBiggestFiles)
+												settings.getBiggestRootExcludedHogFiles()
+														.remove(i);
+												// else
+												settings.getSmallestRootExcludedHogFiles()
+														.remove(i);
+
+												break;
+											}
+
+									FileIO.writeObject(settings,
+											getApplicationContext(),
+											Constants.SETTINGS_FILE);
+
+									switch (settings
+											.getSelectedSearchDirectory()) {
+									case Settings.EXTERNAL_DIRECTORY:
+										if ((biggestHogFiles.getHogFiles()
+												.size()
+												- settings
+														.getBiggestExternalExcludedHogFiles()
+														.size() < settings
+												.getIntFileCount())) {
+											Log.i(TAG,
+													"Refresh on biggest files");
+
+											refresh();
+										} else if ((smallestHogFiles
+												.getHogFiles().size()
+												- settings
+														.getSmallestExternalExcludedHogFiles()
+														.size() < settings
+												.getIntFileCount())) {
+											Log.i(TAG,
+													"Refresh on smallest files");
+
+											refresh();
+										} else {
+											Log.i(TAG, "resetListView()");
+											resetListView();
+										}
+
+										break;
+									case Settings.ROOT_DIRECTORY:
+										if ((biggestHogFiles.getHogFiles()
+												.size()
+												- settings
+														.getBiggestRootExcludedHogFiles()
+														.size() < settings
+												.getIntFileCount())) {
+											Log.i(TAG,
+													"Refresh on biggest files");
+
+											refresh();
+										} else if ((smallestHogFiles
+												.getHogFiles().size()
+												- settings
+														.getSmallestRootExcludedHogFiles()
+														.size() < settings
+												.getIntFileCount())) {
+											Log.i(TAG,
+													"Refresh on smallest files");
+
+											refresh();
+										} else {
+											Log.i(TAG, "resetListView()");
+											resetListView();
+										}
+										break;
+									}
+								}
+								dialog.dismiss();
+							}
+						})
+				.setNegativeButton(R.string.Cancel,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+		AlertDialog alertDialog = builder.create();
+		alertDialog.show();
+	}
+
+	public void resetListView() {
+		if (Constants.debugOn)
+			Log.i(TAG, "Updating UI");
+
+		ArrayList<String> strValues = new ArrayList<String>();
+
+		if (Constants.debugOn)
+			Log.i(TAG,
+					"settings.getIntFileCount(): " + settings.getIntFileCount());
+
+		switch (settings.getSelectedSearchDirectory()) {
+		case (Settings.EXTERNAL_DIRECTORY):
+			if (Constants.debugOn)
+				Log.i(TAG,
+						"settings.getIntFileCount() + settings.getBiggestExternalExcludedHogFiles().size(): "
+								+ (settings.getIntFileCount() + settings
+										.getBiggestExternalExcludedHogFiles()
+										.size()));
+
+			for (Pair pair : biggestHogFiles.getHogFiles()) {
+				if (!Utility.isInExcludedHogFiles(pair.getFile(),
+						settings.getBiggestExternalExcludedHogFiles()))
+					strValues.add("File: " + pair.getFile().getAbsoluteFile()
+							+ "\nSize: "
+							+ Utility.getCorrectByteSize(pair.getSize()));
+
+				if (settings.getIntFileCount() <= strValues.size())
+					break;
+			}
+			for (Pair pair : smallestHogFiles.getHogFiles()) {
+				if (!Utility.isInExcludedHogFiles(pair.getFile(),
+						settings.getSmallestExternalExcludedHogFiles()))
+					strValues.add("File: " + pair.getFile().getAbsoluteFile()
+							+ "\nSize: "
+							+ Utility.getCorrectByteSize(pair.getSize()));
+
+				if (settings.getIntFileCount() <= strValues.size())
+					break;
+			}
+
+			break;
+		case Settings.ROOT_DIRECTORY:
+			for (Pair pair : biggestHogFiles.getHogFiles()) {
+				if (!Utility.isInExcludedHogFiles(pair.getFile(),
+						settings.getBiggestRootExcludedHogFiles()))
+					strValues.add("File: " + pair.getFile().getAbsoluteFile()
+							+ "\nSize: "
+							+ Utility.getCorrectByteSize(pair.getSize()));
+
+				if (settings.getIntFileCount() <= strValues.size())
+					break;
+			}
+			for (Pair pair : smallestHogFiles.getHogFiles()) {
+				if (!Utility.isInExcludedHogFiles(pair.getFile(),
+						settings.getSmallestRootExcludedHogFiles()))
+					strValues.add("File: " + pair.getFile().getAbsoluteFile()
+							+ "\nSize: "
+							+ Utility.getCorrectByteSize(pair.getSize()));
+
+				if (settings.getIntFileCount() <= strValues.size())
+					break;
+			}
+			break;
+		}
+
+		String values[] = strValues.toArray(new String[strValues.size()]);
+
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, android.R.id.text1, values);
+
+		// Assign adapter to ListView
+		//listView.setAdapter(adapter);
+		//listView.setEnabled(true);
+	}
+
+	/**
+	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+	 * one of the sections/tabs/pages.
+	 */
+	public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+		public SectionsPagerAdapter(FragmentManager fm) {
+			super(fm);
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			// getItem is called to instantiate the fragment for the given page.
+			// Return a DummySectionFragment (defined as a static inner class
+			// below) with the page number as its lone argument.
+
+			Fragment fragment;
+			if (position == 0)
+				fragment = new FileListFragment(biggestHogFiles, settings, true);
+			else
+				fragment = new FileListFragment(biggestHogFiles, settings,
+						false);
+
+			Bundle args = new Bundle();
+			args.putInt(FileListFragment.ARG_SECTION_NUMBER, position + 1);
+			fragment.setArguments(args);
+			return fragment;
+		}
+
+		@Override
+		public int getCount() {
+			// Show 3 total pages.
+			return 2;
+		}
+
+		@Override
+		public CharSequence getPageTitle(int position) {
+			switch (position) {
+			case 0:
+				return getString(R.string.Largest);
+			case 1:
+				return getString(R.string.Smallest);
+			}
+			return null;
+		}
+
 	}
 
 	private void checkVersion() {
@@ -348,10 +603,12 @@ public class MainActivity extends ListActivity {
 		if (tempVersion == null) {
 			Log.i(TAG, "tempVersion == null");
 			clearApplicationData();
-			FileIO.writeObject(Constants.VERSION, getApplicationContext(), Constants.VERSION_FILE);
+			FileIO.writeObject(Constants.VERSION, getApplicationContext(),
+					Constants.VERSION_FILE);
 		} else if (tempVersion != Constants.VERSION) {
 			clearApplicationData();
-			FileIO.writeObject(Constants.VERSION, getApplicationContext(), Constants.VERSION_FILE);
+			FileIO.writeObject(Constants.VERSION, getApplicationContext(),
+					Constants.VERSION_FILE);
 		} else {
 			Log.i(TAG, "tempVersion == VERSION");
 		}
@@ -453,200 +710,11 @@ public class MainActivity extends ListActivity {
 			Log.i(TAG, "initalizeAndRefresh()");
 		threadRunning = true;
 
-		t = new Thread();
 		currentFileCount = 0;
 		totalFileCount = 0;
 
-		refresh(t);
+		refresh();
 	}
-
-	DialogInterface.OnClickListener dialogClickListener_YesOrNo = new DialogInterface.OnClickListener() {
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			switch (which) {
-			case DialogInterface.BUTTON_POSITIVE:
-
-				Pair[] aryHogFiles = (settings.isFindBiggestFiles() ? biggestHogFiles
-						.getHogFiles().toArray(
-								new Pair[biggestHogFiles.getHogFiles().size()])
-						: smallestHogFiles.getHogFiles()
-								.toArray(
-										new Pair[smallestHogFiles.getHogFiles()
-												.size()]));
-
-				Log.i(TAG, "aryHogFiles.size(): " + aryHogFiles.length);
-
-				for (Pair pair : aryHogFiles) {
-					if (pair.getFile().getAbsoluteFile()
-							.equals(clickedFile.getAbsoluteFile())) {
-						Log.i(TAG, "Found file to delete");
-						if (settings.isFindBiggestFiles())
-							biggestHogFiles.getHogFiles().remove(pair);
-						else
-							smallestHogFiles.getHogFiles().remove(pair);
-					}
-				}
-
-				boolean isDeleted = clickedFile.delete();
-				clickedFile = null;
-				String strOutput = "IsDeleted: " + isDeleted;
-
-				if (Constants.debugOn)
-					FileIO.writeFile(strOutput, "FileHog_Output.txt");
-
-				switch (settings.getSelectedSearchDirectory()) {
-				case Settings.EXTERNAL_DIRECTORY:
-					if (settings.isFindBiggestFiles()
-							&& biggestHogFiles.getHogFiles().size()
-									- settings
-											.getBiggestExternalExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount()) {
-						t = new Thread();
-						refresh(t);
-					} else if (!settings.isFindBiggestFiles()
-							&& smallestHogFiles.getHogFiles().size()
-									- settings
-											.getSmallestExternalExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount()) {
-						t = new Thread();
-						refresh(t);
-					} else {
-						resetListView();
-					}
-					break;
-				case Settings.ROOT_DIRECTORY:
-					if (settings.isFindBiggestFiles()
-							&& smallestHogFiles.getHogFiles().size()
-									- settings.getBiggestRootExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount()) {
-						t = new Thread();
-						refresh(t);
-					} else if (!settings.isFindBiggestFiles()
-							&& smallestHogFiles.getHogFiles().size()
-									- settings
-											.getSmallestRootExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount()) {
-						t = new Thread();
-						refresh(t);
-
-					} else {
-						resetListView();
-					}
-					break;
-				}
-				break;
-			case DialogInterface.BUTTON_NEGATIVE:
-				break;
-			}
-			dialog.dismiss();
-		}
-	};
-
-	DialogInterface.OnClickListener dialogClickListener_DeleteCopyOrExclude = new DialogInterface.OnClickListener() {
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-
-			switch (which) {
-			case DialogInterface.BUTTON_POSITIVE:
-				// Delete
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						com.houseperez.filehog.MainActivity.this);
-				builder.setMessage("Are you sure?")
-						.setPositiveButton("Yes", dialogClickListener_YesOrNo)
-						.setNegativeButton("No", dialogClickListener_YesOrNo)
-						.show();
-				break;
-			case DialogInterface.BUTTON_NEGATIVE:
-				// Copy
-				builder = null;
-				ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-				ClipData clip = ClipData.newUri(getContentResolver(), "URI",
-						Uri.fromFile(clickedFile));
-				clipboard.setPrimaryClip(clip);
-				Toast.makeText(getApplicationContext(),
-						"File copied to clipboard", Toast.LENGTH_SHORT).show();
-				break;
-			case DialogInterface.BUTTON_NEUTRAL:
-				// Exclude File
-				Log.i(TAG, clickedFile.getPath() + " added to excludedHogFiles");
-				switch (settings.getSelectedSearchDirectory()) {
-				case Settings.EXTERNAL_DIRECTORY:
-					if (settings.isFindBiggestFiles())
-						settings.getBiggestExternalExcludedHogFiles().add(
-								clickedFile);
-					else
-						settings.getSmallestExternalExcludedHogFiles().add(
-								clickedFile);
-					break;
-				case Settings.ROOT_DIRECTORY:
-					if (settings.isFindBiggestFiles())
-						settings.getBiggestRootExcludedHogFiles().add(
-								clickedFile);
-					else
-						settings.getSmallestRootExcludedHogFiles().add(
-								clickedFile);
-					break;
-				}
-
-				FileIO.writeObject(settings, getApplicationContext(),
-						Constants.SETTINGS_FILE);
-				switch (settings.getSelectedSearchDirectory()) {
-				case Settings.EXTERNAL_DIRECTORY:
-					if (settings.isFindBiggestFiles()
-							&& (biggestHogFiles.getHogFiles().size()
-									- settings
-											.getBiggestExternalExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount())) {
-						Log.i(TAG, "Refresh on biggest files");
-						t = new Thread();
-						refresh(t);
-					} else if (!settings.isFindBiggestFiles()
-							&& (smallestHogFiles.getHogFiles().size()
-									- settings
-											.getSmallestExternalExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount())) {
-						Log.i(TAG, "Refresh on smallest files");
-						t = new Thread();
-						refresh(t);
-					} else {
-						Log.i(TAG, "resetListView()");
-						resetListView();
-					}
-					break;
-				case Settings.ROOT_DIRECTORY:
-					if (settings.isFindBiggestFiles()
-							&& (biggestHogFiles.getHogFiles().size()
-									- settings.getBiggestRootExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount())) {
-						Log.i(TAG, "Refresh on biggest files");
-						t = new Thread();
-						refresh(t);
-					} else if (!settings.isFindBiggestFiles()
-							&& (smallestHogFiles.getHogFiles().size()
-									- settings
-											.getSmallestRootExcludedHogFiles()
-											.size() < settings
-										.getIntFileCount())) {
-						Log.i(TAG, "Refresh on smallest files");
-						t = new Thread();
-						refresh(t);
-					} else {
-						Log.i(TAG, "resetListView()");
-						resetListView();
-					}
-					break;
-				}
-				break;
-			}
-		}
-	};
 
 	private void onClick_Settings() {
 		Log.i(TAG,
@@ -659,11 +727,11 @@ public class MainActivity extends ListActivity {
 		startActivity(i);
 	}
 
-	private void refresh(Thread t) {
+	public void refresh() {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-		listView.setEnabled(false);
-		listView.setAdapter(null);
+		//listView.setEnabled(false);
+		//listView.setAdapter(null);
 
 		readHogFiles();
 
@@ -779,259 +847,6 @@ public class MainActivity extends ListActivity {
 
 			}
 		}).start();
-	}
-
-	public void resetListView() {
-		if (Constants.debugOn)
-			Log.i(TAG, "Updating UI");
-
-		ArrayList<String> strValues = new ArrayList<String>();
-
-		if (Constants.debugOn)
-			Log.i(TAG,
-					"settings.getIntFileCount(): " + settings.getIntFileCount());
-
-		switch (settings.getSelectedSearchDirectory()) {
-		case (Settings.EXTERNAL_DIRECTORY):
-			if (settings.isFindBiggestFiles()) {
-				if (Constants.debugOn)
-					Log.i(TAG,
-							"settings.getIntFileCount() + settings.getBiggestExternalExcludedHogFiles().size(): "
-									+ (settings.getIntFileCount() + settings
-											.getBiggestExternalExcludedHogFiles()
-											.size()));
-
-				for (Pair pair : biggestHogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getBiggestExternalExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
-
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
-				}
-			} else {
-				for (Pair pair : smallestHogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getSmallestExternalExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
-
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
-				}
-			}
-			break;
-		case Settings.ROOT_DIRECTORY:
-			if (settings.isFindBiggestFiles()) {
-				for (Pair pair : biggestHogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getBiggestRootExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
-
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
-				}
-			} else {
-				for (Pair pair : smallestHogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getSmallestRootExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
-
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
-				}
-			}
-			break;
-		}
-
-		String values[] = strValues.toArray(new String[strValues.size()]);
-
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-				com.houseperez.filehog.MainActivity.this,
-				android.R.layout.simple_list_item_1, android.R.id.text1, values);
-
-		// Assign adapter to ListView
-		listView.setAdapter(adapter);
-		listView.setEnabled(true);
-	}
-
-	private void onClick_ExcludeFiles() {
-		ArrayList<File> mergedExcludedFiles = new ArrayList<File>();
-		String strTitle = "";
-
-		switch (settings.getSelectedSearchDirectory()) {
-		case Settings.EXTERNAL_DIRECTORY:
-			if (settings.isFindBiggestFiles()) {
-				mergedExcludedFiles.addAll(settings
-						.getBiggestExternalExcludedHogFiles());
-				strTitle = "Excluded Biggest External Directory Files";
-			} else {
-				mergedExcludedFiles.addAll(settings
-						.getSmallestExternalExcludedHogFiles());
-				strTitle = "Excluded Smallest External Directory Files";
-			}
-			break;
-		case Settings.ROOT_DIRECTORY:
-			if (settings.isFindBiggestFiles()) {
-				mergedExcludedFiles.addAll(settings
-						.getBiggestRootExcludedHogFiles());
-				strTitle = "Excluded Biggest Root Directory Files";
-			} else {
-				mergedExcludedFiles.addAll(settings
-						.getSmallestRootExcludedHogFiles());
-				strTitle = "Excluded Smallest Root Directory Files";
-			}
-			break;
-		}
-
-		String[] excludedFiles = new String[mergedExcludedFiles.size()];
-
-		final boolean[] mSelectedItems = new boolean[mergedExcludedFiles.size()];
-
-		for (int i = 0; i < mergedExcludedFiles.size(); i++) {
-			excludedFiles[i] = mergedExcludedFiles.get(i).getAbsoluteFile()
-					.toString();
-		}
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-		builder.setTitle(strTitle)
-
-				.setMultiChoiceItems(excludedFiles, null,
-						new DialogInterface.OnMultiChoiceClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which, boolean isChecked) {
-								if (isChecked) {
-									mSelectedItems[which] = true;
-								} else if (mSelectedItems[which] == true) {
-									mSelectedItems[which] = false;
-								}
-							}
-						})
-				.setPositiveButton("Remove",
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int id) {
-								boolean shouldRemove = false;
-								for (boolean selectedItem : mSelectedItems) {
-									if (selectedItem) {
-										shouldRemove = true;
-										break;
-									}
-								}
-								if (shouldRemove) {
-									for (int i = mSelectedItems.length - 1; i >= 0; i--)
-										if (mSelectedItems[i] == true)
-											switch (settings
-													.getSelectedSearchDirectory()) {
-											case Settings.EXTERNAL_DIRECTORY:
-												if (settings
-														.isFindBiggestFiles())
-													settings.getBiggestExternalExcludedHogFiles()
-															.remove(i);
-												else
-													settings.getSmallestExternalExcludedHogFiles()
-															.remove(i);
-
-												break;
-											case Settings.ROOT_DIRECTORY:
-												if (settings
-														.isFindBiggestFiles())
-													settings.getBiggestRootExcludedHogFiles()
-															.remove(i);
-												else
-													settings.getSmallestRootExcludedHogFiles()
-															.remove(i);
-
-												break;
-											}
-
-									FileIO.writeObject(settings,
-											getApplicationContext(),
-											Constants.SETTINGS_FILE);
-
-									switch (settings
-											.getSelectedSearchDirectory()) {
-									case Settings.EXTERNAL_DIRECTORY:
-										if (settings.isFindBiggestFiles()
-												&& (biggestHogFiles
-														.getHogFiles().size()
-														- settings
-																.getBiggestExternalExcludedHogFiles()
-																.size() < settings
-															.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on biggest files");
-											t = new Thread();
-											refresh(t);
-										} else if (!settings
-												.isFindBiggestFiles()
-												&& (smallestHogFiles
-														.getHogFiles().size()
-														- settings
-																.getSmallestExternalExcludedHogFiles()
-																.size() < settings
-															.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on smallest files");
-											t = new Thread();
-											refresh(t);
-										} else {
-											Log.i(TAG, "resetListView()");
-											resetListView();
-										}
-
-										break;
-									case Settings.ROOT_DIRECTORY:
-										if (settings.isFindBiggestFiles()
-												&& (biggestHogFiles
-														.getHogFiles().size()
-														- settings
-																.getBiggestRootExcludedHogFiles()
-																.size() < settings
-															.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on biggest files");
-											t = new Thread();
-											refresh(t);
-										} else if (!settings
-												.isFindBiggestFiles()
-												&& (smallestHogFiles
-														.getHogFiles().size()
-														- settings
-																.getSmallestRootExcludedHogFiles()
-																.size() < settings
-															.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on smallest files");
-											t = new Thread();
-											refresh(t);
-										} else {
-											Log.i(TAG, "resetListView()");
-											resetListView();
-										}
-										break;
-									}
-								}
-								dialog.dismiss();
-							}
-						})
-				.setNegativeButton(R.string.Cancel,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.cancel();
-							}
-						});
-		AlertDialog alertDialog = builder.create();
-		alertDialog.show();
 	}
 
 	private void onClick_About() {
