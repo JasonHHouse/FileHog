@@ -313,9 +313,11 @@ public class MainActivity extends FragmentActivity {
 		ArrayList<File> mergedExcludedFiles = new ArrayList<File>();
 		String strTitle = "";
 
+		//New Line
+		
 		switch (settings.getSelectedSearchDirectory()) {
 		case Settings.EXTERNAL_DIRECTORY:
-			// if (isBiggestFiles) {
+			// if (isBiggestFiles) { 
 			mergedExcludedFiles.addAll(settings
 					.getBiggestExternalExcludedHogFiles());
 			strTitle = "Excluded Biggest External Directory Files";
