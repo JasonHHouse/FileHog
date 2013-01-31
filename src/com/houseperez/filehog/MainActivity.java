@@ -312,8 +312,6 @@ public class MainActivity extends FragmentActivity {
 	private void onClick_ExcludeFiles() {
 		ArrayList<File> mergedExcludedFiles = new ArrayList<File>();
 		String strTitle = "";
-
-		//New Line
 		
 		switch (settings.getSelectedSearchDirectory()) {
 		case Settings.EXTERNAL_DIRECTORY:
