@@ -167,8 +167,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity {
@@ -189,7 +187,7 @@ public class MainActivity extends FragmentActivity {
 	private boolean needToRefreshList;
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 	private ViewPager mViewPager;
-	private ListView listView;
+	private FileListFragment[] fileListFragments;
 
 	public void terminate() {
 		threadRunning = false;
@@ -203,15 +201,7 @@ public class MainActivity extends FragmentActivity {
 
 		checkVersion();
 
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the app.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
-
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
-
+		fileListFragments = new FileListFragment[2];
 		// listView = getListView();
 
 	}
@@ -261,6 +251,16 @@ public class MainActivity extends FragmentActivity {
 		} else {
 			needToRefreshList = settings.isOnOpenRefresh();
 			initalizeAndRefresh();
+
+			// Create the adapter that will return a fragment for each of the
+			// three
+			// primary sections of the app.
+			mSectionsPagerAdapter = new SectionsPagerAdapter(
+					getSupportFragmentManager());
+
+			// Set up the ViewPager with the sections adapter.
+			mViewPager = (ViewPager) findViewById(R.id.pager);
+			mViewPager.setAdapter(mSectionsPagerAdapter);
 		}
 
 	}
@@ -538,14 +538,16 @@ public class MainActivity extends FragmentActivity {
 			break;
 		}
 
-		String values[] = strValues.toArray(new String[strValues.size()]);
-
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1, values);
+		/*
+		 * String values[] = strValues.toArray(new String[strValues.size()]);
+		 * 
+		 * adapter = new ArrayAdapter<String>(this,
+		 * android.R.layout.simple_list_item_1, android.R.id.text1, values);
+		 */
 
 		// Assign adapter to ListView
-		//listView.setAdapter(adapter);
-		//listView.setEnabled(true);
+		// listView.setAdapter(adapter);
+		// listView.setEnabled(true);
 	}
 
 	/**
@@ -564,17 +566,15 @@ public class MainActivity extends FragmentActivity {
 			// Return a DummySectionFragment (defined as a static inner class
 			// below) with the page number as its lone argument.
 
-			Fragment fragment;
-			if (position == 0)
-				fragment = new FileListFragment(biggestHogFiles, settings, true);
-			else
-				fragment = new FileListFragment(biggestHogFiles, settings,
-						false);
+			Log.i(TAG, "position: " + position);
 
+			fileListFragments[position] = new FileListFragment(
+					(position == 1 ? smallestHogFiles : biggestHogFiles),
+					settings, true);
 			Bundle args = new Bundle();
 			args.putInt(FileListFragment.ARG_SECTION_NUMBER, position + 1);
-			fragment.setArguments(args);
-			return fragment;
+			fileListFragments[position].setArguments(args);
+			return fileListFragments[position];
 		}
 
 		@Override
@@ -730,8 +730,8 @@ public class MainActivity extends FragmentActivity {
 	public void refresh() {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-		//listView.setEnabled(false);
-		//listView.setAdapter(null);
+		// listView.setEnabled(false);
+		// listView.setAdapter(null);
 
 		readHogFiles();
 
@@ -842,8 +842,21 @@ public class MainActivity extends FragmentActivity {
 						}
 						getWindow().clearFlags(
 								WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+						for (int i = 0; i < fileListFragments.length; i++) {
+							if (fileListFragments[i] != null) {
+								fileListFragments[i]
+										.setHogFiles((i == 1 ? smallestHogFiles
+												: biggestHogFiles));
+								fileListFragments[i].getAdapter()
+										.notifyDataSetChanged();
+							}
+						}
 					}
 				});
+
+				// if (adapter != null)
+				// adapter.notifyDataSetChanged();
 
 			}
 		}).start();

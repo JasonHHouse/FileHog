@@ -34,6 +34,7 @@ public class FileListFragment extends ListFragment {
 	private Settings settings;
 	private File clickedFile;
 	private boolean isBiggestFiles;
+	private ArrayAdapter<String> adapter;
 
 	public FileListFragment(HogFileList hogFiles, Settings settings,
 			boolean isBiggestFiles) {
@@ -43,25 +44,42 @@ public class FileListFragment extends ListFragment {
 	}
 
 	public FileListFragment() {
+	}	
+	
+	public HogFileList getHogFiles() {
+		return hogFiles;
+	}
+
+	public void setHogFiles(HogFileList hogFiles) {
+		this.hogFiles = hogFiles;
+	}
+
+	public ArrayAdapter<String> getAdapter() {
+		return adapter;
+	}
+
+	public void setAdapter(ArrayAdapter<String> adapter) {
+		this.adapter = adapter;
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		ArrayList<String> strValues = new ArrayList<String>();
-		for (Pair pair : hogFiles.getHogFiles()) {
-			if (!Utility.isInExcludedHogFiles(pair.getFile(),
-					settings.getBiggestExternalExcludedHogFiles()))
-				strValues.add("File: " + pair.getFile().getAbsoluteFile()
-						+ "\nSize: "
-						+ Utility.getCorrectByteSize(pair.getSize()));
+		if (hogFiles != null)
+			for (Pair pair : hogFiles.getHogFiles()) {
+				if (!Utility.isInExcludedHogFiles(pair.getFile(),
+						settings.getBiggestExternalExcludedHogFiles()))
+					strValues.add("File: " + pair.getFile().getAbsoluteFile()
+							+ "\nSize: "
+							+ Utility.getCorrectByteSize(pair.getSize()));
 
-			if (settings.getIntFileCount() <= strValues.size())
-				break;
-		}
+				if (settings.getIntFileCount() <= strValues.size())
+					break;
+			}
 		String values[] = strValues.toArray(new String[strValues.size()]);
-		
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+
+		adapter = new ArrayAdapter<String>(getActivity(),
 				android.R.layout.simple_list_item_1, values);
 		setListAdapter(adapter);
 	}
@@ -101,8 +119,7 @@ public class FileListFragment extends ListFragment {
 			switch (which) {
 			case DialogInterface.BUTTON_POSITIVE:
 				// Delete
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						getActivity().getApplicationContext());
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 				builder.setMessage("Are you sure?")
 						.setPositiveButton("Yes", dialogClickListener_YesOrNo)
 						.setNegativeButton("No", dialogClickListener_YesOrNo)

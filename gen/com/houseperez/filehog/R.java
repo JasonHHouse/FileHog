@@ -19,28 +19,24 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int About=0x7f080014;
-        public static final int ExcludedFiles=0x7f080015;
-        public static final int Refresh=0x7f080016;
-        public static final int Settings=0x7f080017;
-        public static final int layout=0x7f080013;
-        public static final int layoutAdvancedSettings=0x7f08000e;
+        public static final int About=0x7f080010;
+        public static final int ExcludedFiles=0x7f080011;
+        public static final int Refresh=0x7f080012;
+        public static final int Settings=0x7f080013;
+        public static final int layout=0x7f08000f;
+        public static final int layoutAdvancedSettings=0x7f08000a;
         public static final int layoutSettingsDefault=0x7f080003;
         public static final int pager=0x7f080000;
         public static final int pager_title_strip=0x7f080001;
-        public static final int rdgDirectory=0x7f080010;
-        public static final int rdgFileSort=0x7f08000a;
-        public static final int rdoExternal=0x7f080011;
-        public static final int rdoLargest=0x7f08000b;
-        public static final int rdoRoot=0x7f080012;
-        public static final int rdoSmallest=0x7f08000c;
+        public static final int rdgDirectory=0x7f08000c;
+        public static final int rdoExternal=0x7f08000d;
+        public static final int rdoRoot=0x7f08000e;
         public static final int seekFileCount=0x7f080005;
         public static final int spinResearchFrequency=0x7f080008;
-        public static final int txtAdvanced=0x7f08000d;
-        public static final int txtDirectory=0x7f08000f;
+        public static final int txtAdvanced=0x7f080009;
+        public static final int txtDirectory=0x7f08000b;
         public static final int txtFileCount=0x7f080004;
         public static final int txtFileCountNumber=0x7f080006;
-        public static final int txtFileSort=0x7f080009;
         public static final int txtGeneral=0x7f080002;
         public static final int txtResearchFrequency=0x7f080007;
     }

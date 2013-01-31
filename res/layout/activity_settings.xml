@@ -67,40 +67,6 @@
                 android:id="@+id/spinResearchFrequency"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#BDBDBD" />
-
-            <TextView
-                android:id="@+id/txtFileSort"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="@string/FileSort"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
-            <RadioGroup
-                android:id="@+id/rdgFileSort"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" >
-
-                <RadioButton
-                    android:id="@+id/rdoLargest"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:onClick="onFileSortRadioButtonClicked"
-                    android:text="@string/Largest" />
-
-                <RadioButton
-                    android:id="@+id/rdoSmallest"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="onFileSortRadioButtonClicked"
-                    android:text="@string/Smallest" />
-            </RadioGroup>
         </LinearLayout>
 
         <TextView
