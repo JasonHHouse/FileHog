@@ -159,6 +159,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -166,6 +168,7 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -251,16 +254,6 @@ public class MainActivity extends FragmentActivity {
 		} else {
 			needToRefreshList = settings.isOnOpenRefresh();
 			initalizeAndRefresh();
-
-			// Create the adapter that will return a fragment for each of the
-			// three
-			// primary sections of the app.
-			mSectionsPagerAdapter = new SectionsPagerAdapter(
-					getSupportFragmentManager());
-
-			// Set up the ViewPager with the sections adapter.
-			mViewPager = (ViewPager) findViewById(R.id.pager);
-			mViewPager.setAdapter(mSectionsPagerAdapter);
 		}
 
 	}
@@ -312,10 +305,10 @@ public class MainActivity extends FragmentActivity {
 	private void onClick_ExcludeFiles() {
 		ArrayList<File> mergedExcludedFiles = new ArrayList<File>();
 		String strTitle = "";
-		
+
 		switch (settings.getSelectedSearchDirectory()) {
 		case Settings.EXTERNAL_DIRECTORY:
-			// if (isBiggestFiles) { 
+			// if (isBiggestFiles) {
 			mergedExcludedFiles.addAll(settings
 					.getBiggestExternalExcludedHogFiles());
 			strTitle = "Excluded Biggest External Directory Files";
@@ -538,16 +531,14 @@ public class MainActivity extends FragmentActivity {
 			break;
 		}
 
-		/*
-		 * String values[] = strValues.toArray(new String[strValues.size()]);
-		 * 
-		 * adapter = new ArrayAdapter<String>(this,
-		 * android.R.layout.simple_list_item_1, android.R.id.text1, values);
-		 */
-
-		// Assign adapter to ListView
-		// listView.setAdapter(adapter);
-		// listView.setEnabled(true);
+		// &&&***
+		if (mViewPager != null) {
+			int index = mViewPager.getCurrentItem();
+			mSectionsPagerAdapter.notifyDataSetChanged();
+			fileListFragments[index] = new FileListFragment(
+					(index == 1 ? smallestHogFiles : biggestHogFiles),
+					settings, true);
+		}
 	}
 
 	/**
@@ -566,7 +557,7 @@ public class MainActivity extends FragmentActivity {
 			// Return a DummySectionFragment (defined as a static inner class
 			// below) with the page number as its lone argument.
 
-			Log.i(TAG, "position: " + position);
+			Log.i(TAG, "getItem() position: " + position);
 
 			fileListFragments[position] = new FileListFragment(
 					(position == 1 ? smallestHogFiles : biggestHogFiles),
@@ -575,6 +566,10 @@ public class MainActivity extends FragmentActivity {
 			args.putInt(FileListFragment.ARG_SECTION_NUMBER, position + 1);
 			fileListFragments[position].setArguments(args);
 			return fileListFragments[position];
+		}
+
+		public FileListFragment getFragment(int key) {
+			return (key == 1 ? fileListFragments[1] : fileListFragments[0]);
 		}
 
 		@Override
@@ -721,9 +716,6 @@ public class MainActivity extends FragmentActivity {
 				"settings.getResearchFrequency(): "
 						+ settings.getResearchFrequency());
 		Intent i = new Intent(this, SettingsActivity.class);
-		// Bundle b = new Bundle();
-		// b.putParcelable(Constants.STR_STRING, settings);
-		// i.putExtras(b);
 		startActivity(i);
 	}
 
@@ -843,14 +835,28 @@ public class MainActivity extends FragmentActivity {
 						getWindow().clearFlags(
 								WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-						for (int i = 0; i < fileListFragments.length; i++) {
-							if (fileListFragments[i] != null) {
-								fileListFragments[i]
-										.setHogFiles((i == 1 ? smallestHogFiles
-												: biggestHogFiles));
-								fileListFragments[i].getAdapter()
-										.notifyDataSetChanged();
+						if (mSectionsPagerAdapter == null) {
+							mSectionsPagerAdapter = new SectionsPagerAdapter(
+									getSupportFragmentManager());
+
+							// Set up the ViewPager with the sections adapter.
+							mViewPager = (ViewPager) findViewById(R.id.pager);
+							mViewPager.setAdapter(mSectionsPagerAdapter);
+						} else {
+
+							for (int i = 0; i < fileListFragments.length; i++) {
+								if (fileListFragments[i] != null) {
+
+									fileListFragments[i]
+											.setHogFiles((i == 1 ? smallestHogFiles
+													: biggestHogFiles));
+									mSectionsPagerAdapter
+											.notifyDataSetChanged();
+									// fileListFragments[i].getAdapter()
+									// .notifyDataSetChanged();
+								}
 							}
+
 						}
 					}
 				});
