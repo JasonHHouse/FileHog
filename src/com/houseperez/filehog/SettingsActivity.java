@@ -103,6 +103,7 @@ public class SettingsActivity extends Activity {
 						.setText(Integer.toString(progress + 1));
 				FileIO.writeObject(settings, getApplicationContext(),
 						Constants.SETTINGS_FILE);
+				settings.setOnOpenRefresh(false);
 			}
 		}
 
