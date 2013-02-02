@@ -147,6 +147,10 @@
  * Revision v 3.01
  * 
  * Fixed the rotation issue
+ * 
+ * Revision v 3.02
+ * 
+ * Fixed the refresh rotation issue
  */
 
 package com.houseperez.filehog;
@@ -190,7 +194,6 @@ public class MainActivity extends FragmentActivity {
 	private ProgressDialog progressDialog;
 	private AlertDialog countingFilesDialog;
 	private AlertDialog releaseOfLiabilityDialog;
-	private AlertDialog researchFrequencyDialog;
 	private boolean threadRunning;
 	private long currentFileCount;
 	private Settings settings;
@@ -216,7 +219,6 @@ public class MainActivity extends FragmentActivity {
 		checkVersion();
 
 		fileListFragments = new FileListFragment[2];
-
 	}
 
 	@Override
@@ -224,7 +226,7 @@ public class MainActivity extends FragmentActivity {
 		super.onStop();
 		Log.i(TAG, "onStop()");
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -258,6 +260,9 @@ public class MainActivity extends FragmentActivity {
 			releaseOfLiabilityDialog.show();
 		} else {
 			needToRefreshList = settings.isOnOpenRefresh();
+			settings.setOnOpenRefresh(false);
+			FileIO.writeObject(settings, getApplicationContext(),
+					Constants.SETTINGS_FILE);
 			initalizeAndRefresh();
 
 			Log.i(TAG, "mSectionsPagerAdapter: "
@@ -271,7 +276,7 @@ public class MainActivity extends FragmentActivity {
 				mViewPager.setAdapter(mSectionsPagerAdapter);
 			}
 		}
-		
+
 		super.onStart();
 	}
 
@@ -280,14 +285,22 @@ public class MainActivity extends FragmentActivity {
 		super.onPause();
 		Log.i(TAG, "onPause()");
 		terminate();
-		if (countingFilesDialog != null)
+		if (countingFilesDialog != null) {
+			Log.i(TAG, "countingFilesDialog != null");
 			countingFilesDialog.dismiss();
-		if (progressDialog != null)
+			settings.setOnOpenRefresh(true);
+			FileIO.writeObject(settings, getApplicationContext(),
+					Constants.SETTINGS_FILE);
+		}
+		if (progressDialog != null) {
+			Log.i(TAG, "progressDialog != null");
 			progressDialog.dismiss();
+			settings.setOnOpenRefresh(true);
+			FileIO.writeObject(settings, getApplicationContext(),
+					Constants.SETTINGS_FILE);
+		}
 		if (releaseOfLiabilityDialog != null)
 			releaseOfLiabilityDialog.dismiss();
-		if (researchFrequencyDialog != null)
-			researchFrequencyDialog.dismiss();
 	}
 
 	@Override

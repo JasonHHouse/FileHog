@@ -43,7 +43,6 @@ public class Settings implements Serializable, Parcelable {
 	private ArrayList<File> smallestRootExcludedHogFiles;
 	private int intFileCount;
 	private int selectedSearchDirectory;
-	//private boolean findBiggestFiles;
 	private long timeToDelayRefresh;
 	private boolean onOpenRefresh;
 	private int researchFrequency;
@@ -62,7 +61,6 @@ public class Settings implements Serializable, Parcelable {
 		this.smallestRootExcludedHogFiles = smallestRootExcludedHogFiles;
 		this.intFileCount = intFileCount;
 		this.selectedSearchDirectory = selectedSearchDirectory;
-		//this.findBiggestFiles = findBiggestFiles;
 		this.timeToDelayRefresh = timeToDelayRefresh;
 		this.onOpenRefresh = onOpenRefresh;
 		this.researchFrequency = researchFrequency;
@@ -143,15 +141,7 @@ public class Settings implements Serializable, Parcelable {
 	public void setSelectedSearchDirectory(int selectedSearchDirectory) {
 		this.selectedSearchDirectory = selectedSearchDirectory;
 	}
-/*
-	public boolean isFindBiggestFiles() {
-		return findBiggestFiles;
-	}
-
-	public void setFindBiggestFiles(boolean findBiggestFiles) {
-		this.findBiggestFiles = findBiggestFiles;
-	}
-*/
+	
 	@Override
 	public int describeContents() {
 		return 0;
@@ -165,7 +155,6 @@ public class Settings implements Serializable, Parcelable {
 		dest.writeSerializable(smallestRootExcludedHogFiles);
 		dest.writeInt(intFileCount);
 		dest.writeInt(selectedSearchDirectory);
-		//dest.writeByte((byte) (findBiggestFiles ? 1 : 0));
 		dest.writeLong(timeToDelayRefresh);
 		dest.writeByte((byte) (onOpenRefresh ? 1 : 0));
 		dest.writeInt(researchFrequency);
@@ -191,7 +180,6 @@ public class Settings implements Serializable, Parcelable {
 		smallestRootExcludedHogFiles = (ArrayList<File>) in.readSerializable();
 		intFileCount = in.readInt();
 		selectedSearchDirectory = in.readInt();
-		//findBiggestFiles = in.readByte() == 1;
 		timeToDelayRefresh = in.readLong();
 		onOpenRefresh = in.readByte() == 1;
 		researchFrequency = in.readInt();
