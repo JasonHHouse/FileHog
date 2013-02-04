@@ -151,6 +151,10 @@
  * Revision v 3.02
  * 
  * Fixed the refresh rotation issue
+ * 
+ * Revision v 3.03
+ * 
+ * Overhauled the rotation code to better check for and handle refreshes 
  */
 
 package com.houseperez.filehog;
@@ -178,6 +182,7 @@ import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -237,6 +242,11 @@ public class MainActivity extends FragmentActivity {
 	protected void onStart() {
 		Log.i(TAG, "onStart()");
 
+		WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		Display mDisplay = mWindowManager.getDefaultDisplay();
+		int intRotation = mDisplay.getRotation();
+		Log.i(TAG, "getRotation(): " + intRotation);
+
 		if ((settings = (Settings) FileIO.readObject(getApplicationContext(),
 				Constants.SETTINGS_FILE)) == null) {
 			Log.i(TAG, "FileIO.readSettings(): null");
@@ -244,7 +254,7 @@ public class MainActivity extends FragmentActivity {
 					new ArrayList<File>(0), new ArrayList<File>(0),
 					new ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
 					Settings.EXTERNAL_DIRECTORY, true, Settings.DAY_IN_MILLI,
-					false, Settings.DAILY);
+					false, Settings.DAILY, intRotation);
 			FileIO.writeObject(settings, getApplicationContext(),
 					Constants.SETTINGS_FILE);
 		} else {
@@ -259,6 +269,12 @@ public class MainActivity extends FragmentActivity {
 			releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
 			releaseOfLiabilityDialog.show();
 		} else {
+			Log.i(TAG,
+					"settings.getIntRotation() == intRotation: "
+							+ (settings.getIntRotation() == intRotation));
+			if (settings.getIntRotation() != intRotation)
+				settings.setIntRotation(intRotation);
+
 			needToRefreshList = settings.isOnOpenRefresh();
 			settings.setOnOpenRefresh(false);
 			FileIO.writeObject(settings, getApplicationContext(),
@@ -285,22 +301,28 @@ public class MainActivity extends FragmentActivity {
 		super.onPause();
 		Log.i(TAG, "onPause()");
 		terminate();
+
 		if (countingFilesDialog != null) {
-			Log.i(TAG, "countingFilesDialog != null");
+			if (countingFilesDialog.isShowing())
+				settings.setOnOpenRefresh(true);
 			countingFilesDialog.dismiss();
-			settings.setOnOpenRefresh(true);
-			FileIO.writeObject(settings, getApplicationContext(),
-					Constants.SETTINGS_FILE);
 		}
 		if (progressDialog != null) {
-			Log.i(TAG, "progressDialog != null");
+			if (progressDialog.isShowing())
+				settings.setOnOpenRefresh(true);
 			progressDialog.dismiss();
-			settings.setOnOpenRefresh(true);
-			FileIO.writeObject(settings, getApplicationContext(),
-					Constants.SETTINGS_FILE);
 		}
 		if (releaseOfLiabilityDialog != null)
 			releaseOfLiabilityDialog.dismiss();
+
+		FileIO.writeObject(settings, getApplicationContext(),
+				Constants.SETTINGS_FILE);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		Log.i(TAG, "onDestroy()");
 	}
 
 	@Override

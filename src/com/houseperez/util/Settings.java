@@ -46,6 +46,7 @@ public class Settings implements Serializable, Parcelable {
 	private long timeToDelayRefresh;
 	private boolean onOpenRefresh;
 	private int researchFrequency;
+	private int intRotation;
 
 	public Settings(ArrayList<File> biggestExternalExcludedHogFiles,
 			ArrayList<File> smallestExternalExcludedHogFiles,
@@ -53,7 +54,7 @@ public class Settings implements Serializable, Parcelable {
 			ArrayList<File> smallestRootExcludedHogFiles, int intFileCount,
 			int selectedSearchDirectory, boolean findBiggestFiles,
 			long timeToDelayRefresh, boolean onOpenRefresh,
-			int researchFrequency) {
+			int researchFrequency, int intRotation) {
 		super();
 		this.biggestExternalExcludedHogFiles = biggestExternalExcludedHogFiles;
 		this.smallestExternalExcludedHogFiles = smallestExternalExcludedHogFiles;
@@ -64,6 +65,15 @@ public class Settings implements Serializable, Parcelable {
 		this.timeToDelayRefresh = timeToDelayRefresh;
 		this.onOpenRefresh = onOpenRefresh;
 		this.researchFrequency = researchFrequency;
+		this.intRotation = intRotation;
+	}
+
+	public int getIntRotation() {
+		return intRotation;
+	}
+
+	public void setIntRotation(int intRotation) {
+		this.intRotation = intRotation;
 	}
 
 	public int getResearchFrequency() {
@@ -141,7 +151,7 @@ public class Settings implements Serializable, Parcelable {
 	public void setSelectedSearchDirectory(int selectedSearchDirectory) {
 		this.selectedSearchDirectory = selectedSearchDirectory;
 	}
-	
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -158,6 +168,7 @@ public class Settings implements Serializable, Parcelable {
 		dest.writeLong(timeToDelayRefresh);
 		dest.writeByte((byte) (onOpenRefresh ? 1 : 0));
 		dest.writeInt(researchFrequency);
+		dest.writeInt(intRotation);
 	}
 
 	public static final Parcelable.Creator<Settings> CREATOR = new Parcelable.Creator<Settings>() {
@@ -183,5 +194,6 @@ public class Settings implements Serializable, Parcelable {
 		timeToDelayRefresh = in.readLong();
 		onOpenRefresh = in.readByte() == 1;
 		researchFrequency = in.readInt();
+		intRotation = in.readInt();
 	}
 }

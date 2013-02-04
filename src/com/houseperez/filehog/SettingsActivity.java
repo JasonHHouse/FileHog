@@ -1,8 +1,5 @@
 package com.houseperez.filehog;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import com.houseperez.util.Constants;
 import com.houseperez.util.FileIO;
 import com.houseperez.util.Settings;
@@ -49,12 +46,12 @@ public class SettingsActivity extends Activity {
 		settings = (Settings) FileIO.readObject(getApplicationContext(),
 				Constants.SETTINGS_FILE);
 
-		if (settings == null)
+		/*if (settings == null)
 			settings = new Settings(new ArrayList<File>(0),
 					new ArrayList<File>(0), new ArrayList<File>(0),
 					new ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
 					Settings.EXTERNAL_DIRECTORY, true, Settings.DAY_IN_MILLI,
-					false, Settings.DAILY);
+					false, Settings.DAILY);*/
 
 		// File Count
 		Log.i(TAG, "settings.getIntFileCount(): " + settings.getIntFileCount());

@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Properties;
 
 import android.content.Context;
 import android.os.Environment;
@@ -55,7 +56,7 @@ public class FileIO {
 
 		}
 	}
-	
+
 	public static String getSearchFolder(int selectedSearchDirectory) {
 		if (selectedSearchDirectory == Settings.ROOT_DIRECTORY)
 			return Environment.getRootDirectory().getAbsolutePath();
@@ -92,7 +93,7 @@ public class FileIO {
 		}
 		return obj;
 	}
-	
+
 	public static boolean deleteObject(Context ctx, String strFile) {
 		try {
 			Log.i(TAG, "Deleting " + strFile);
