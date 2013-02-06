@@ -1,14 +1,18 @@
 package com.houseperez.util;
 
+
+
 public class Constants {
 
 	// Constants
 	public static final boolean debugOn = false;
-	public static final double VERSION = 3.03;
+	public static final double VERSION = 3.04;
 	public static final int MAX_FILE_COUNT = 50;
 	public static final int STARTING_FILE_COUNT = 10;
 	public static final String STR_STRING = "Settings";
 	public static final int MAX_SEEK_BAR = 19; //1 + Max gives us 20, to account for 0 base
+	public static final String HOG_FILES = "hogfiles";
+	public static final String IS_BIGGEST_FILES = "isBiggestFiles";
 
 	// Constant File Names
 	public static final String SETTINGS_FILE = "settings.fh";

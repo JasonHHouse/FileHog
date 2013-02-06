@@ -29,7 +29,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Properties;
 
 import android.content.Context;
 import android.os.Environment;
@@ -64,11 +63,12 @@ public class FileIO {
 			return Environment.getExternalStorageDirectory().getAbsolutePath();
 	}
 
-	public static void writeObject(Object obj, Context ctx, String strFile) {
+	public static void writeObject(Object obj, String strFile, File path) {
 		try {
 			Log.i(TAG, "Writing new " + strFile);
-			FileOutputStream fout = ctx.openFileOutput(strFile,
-					Context.MODE_PRIVATE);
+			path.mkdirs(); //create folders where write files
+			File filePath = new File(path, strFile);
+			FileOutputStream fout = new FileOutputStream(filePath);
 			ObjectOutputStream oos = new ObjectOutputStream(fout);
 			oos.writeObject(obj);
 			oos.close();
@@ -77,11 +77,12 @@ public class FileIO {
 		}
 	}
 
-	public static Object readObject(Context ctx, String strFile) {
+	public static Object readObject(String strFile, File path) {
 		Object obj = null;
 		try {
 			Log.i(TAG, "Reading " + strFile);
-			FileInputStream fin = ctx.openFileInput(strFile);
+			File filePath = new File(path, strFile);
+			FileInputStream fin = new FileInputStream(filePath);
 			ObjectInputStream ois = new ObjectInputStream(fin);
 			obj = ois.readObject();
 			ois.close();

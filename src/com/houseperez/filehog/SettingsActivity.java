@@ -43,15 +43,16 @@ public class SettingsActivity extends Activity {
 		super.onStop();
 		Log.i(TAG, "onStart(): " + TAG);
 
-		settings = (Settings) FileIO.readObject(getApplicationContext(),
-				Constants.SETTINGS_FILE);
+		settings = (Settings) FileIO.readObject(Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 
-		/*if (settings == null)
-			settings = new Settings(new ArrayList<File>(0),
-					new ArrayList<File>(0), new ArrayList<File>(0),
-					new ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
-					Settings.EXTERNAL_DIRECTORY, true, Settings.DAY_IN_MILLI,
-					false, Settings.DAILY);*/
+		/*
+		 * if (settings == null) settings = new Settings(new ArrayList<File>(0),
+		 * new ArrayList<File>(0), new ArrayList<File>(0), new
+		 * ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
+		 * Settings.EXTERNAL_DIRECTORY, true, Settings.DAY_IN_MILLI, false,
+		 * Settings.DAILY);
+		 */
 
 		// File Count
 		Log.i(TAG, "settings.getIntFileCount(): " + settings.getIntFileCount());
@@ -98,8 +99,8 @@ public class SettingsActivity extends Activity {
 				settings.setIntFileCount(progress + 1);
 				((TextView) findViewById(R.id.txtFileCountNumber))
 						.setText(Integer.toString(progress + 1));
-				FileIO.writeObject(settings, getApplicationContext(),
-						Constants.SETTINGS_FILE);
+				FileIO.writeObject(settings, Constants.SETTINGS_FILE,
+						MainActivity.getFilePath());
 				settings.setOnOpenRefresh(false);
 			}
 		}
@@ -140,8 +141,8 @@ public class SettingsActivity extends Activity {
 				settings.setResearchFrequency(Settings.BI_WEEKLY);
 				break;
 			}
-			FileIO.writeObject(settings, getApplicationContext(),
-					Constants.SETTINGS_FILE);
+			FileIO.writeObject(settings, Constants.SETTINGS_FILE,
+					MainActivity.getFilePath());
 		}
 
 		@Override
@@ -173,8 +174,8 @@ public class SettingsActivity extends Activity {
 			}
 			break;
 		}
-		FileIO.writeObject(settings, getApplicationContext(),
-				Constants.SETTINGS_FILE);
+		FileIO.writeObject(settings, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 }

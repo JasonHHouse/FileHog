@@ -3,23 +3,21 @@ package com.houseperez.filehog;
 import java.io.File;
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.houseperez.filehog.MainActivity.SectionsPagerAdapter;
 import com.houseperez.util.Constants;
 import com.houseperez.util.FileIO;
 import com.houseperez.util.HogFileList;
@@ -36,14 +34,10 @@ public class FileListFragment extends ListFragment {
 	private HogFileList hogFiles;
 	private File clickedFile;
 	private boolean isBiggestFiles;
-
-	public FileListFragment(HogFileList hogFiles, boolean isBiggestFiles) {
-		Log.i(TAG, "FileListFragment Constructor");
-		this.hogFiles = hogFiles;
-		this.isBiggestFiles = isBiggestFiles;
-	}
+	private Settings settings;
 
 	public FileListFragment() {
+		Log.i(TAG, "FileListFragment Constructor");
 	}
 
 	public HogFileList getHogFiles() {
@@ -54,31 +48,48 @@ public class FileListFragment extends ListFragment {
 		this.hogFiles = hogFiles;
 	}
 
-	
-	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
+		Log.i(TAG, "onActivityCreated()");
+		
+		this.hogFiles = (HogFileList)getArguments().getSerializable(Constants.HOG_FILES);
+		this.isBiggestFiles = getArguments().getBoolean(Constants.IS_BIGGEST_FILES);
+		
 		ArrayList<String> strValues = new ArrayList<String>();
 		if (hogFiles != null)
 			for (Pair pair : hogFiles.getHogFiles()) {
 				if (!Utility.isInExcludedHogFiles(pair.getFile(),
-						((MainActivity)getActivity()).getSettings().getBiggestExternalExcludedHogFiles()))
+						settings.getBiggestExternalExcludedHogFiles()))
 					strValues.add("File: " + pair.getFile().getAbsoluteFile()
 							+ "\nSize: "
 							+ Utility.getCorrectByteSize(pair.getSize()));
 
-				if (((MainActivity)getActivity()).getSettings().getIntFileCount() <= strValues.size())
+				if (settings.getIntFileCount() <= strValues.size())
 					break;
 			}
 		String[] values = strValues.toArray(new String[strValues.size()]);
+		Log.i(TAG, "values.length: " + values.length);
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
 				android.R.layout.simple_list_item_1, values);
 		setListAdapter(adapter);
 	}
 
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		Log.i(TAG, "onAttach()");
+		settings = Settings.getInstance(0);
+	}
+
+	@Override
+	public void onResume(){
+		super.onResume();
+		Log.i(TAG, "onResume()");
+		resetListView();
+	}
+	
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		String strFile = ((String) l.getItemAtPosition((int) id));
@@ -115,41 +126,48 @@ public class FileListFragment extends ListFragment {
 
 		if (Constants.debugOn)
 			Log.i(TAG,
-					"((MainActivity)getActivity()).getSettings().getIntFileCount(): " + ((MainActivity)getActivity()).getSettings().getIntFileCount());
+					"settings.getIntFileCount(): " + settings.getIntFileCount());
 
 		Log.i(TAG,
-				"Settings.EXTERNAL_DIRECTORY: "
-						+ (((MainActivity)getActivity()).getSettings().getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY));
+				"(MainActivity)getActivity() is "
+						+ (((MainActivity) getActivity()) == null ? "null"
+								: "not null"));
 
-		switch (((MainActivity)getActivity()).getSettings().getSelectedSearchDirectory()) {
+		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
+		
+		Log.i(TAG,
+				"settings.EXTERNAL_DIRECTORY: "
+						+ (settings.getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY));
+
+		switch (settings.getSelectedSearchDirectory()) {
 		case (Settings.EXTERNAL_DIRECTORY):
 			if (Constants.debugOn)
 				Log.i(TAG,
-						"((MainActivity)getActivity()).getSettings().getIntFileCount() + ((MainActivity)getActivity()).getSettings().getBiggestExternalExcludedHogFiles().size(): "
-								+ (((MainActivity)getActivity()).getSettings().getIntFileCount() + ((MainActivity)getActivity()).getSettings()
+						"settings.getIntFileCount() + settings.getBiggestExternalExcludedHogFiles().size(): "
+								+ (settings.getIntFileCount() + settings
 										.getBiggestExternalExcludedHogFiles()
 										.size()));
 
 			if (isBiggestFiles) {
 				for (Pair pair : hogFiles.getHogFiles()) {
 					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							((MainActivity)getActivity()).getSettings().getBiggestExternalExcludedHogFiles()))
+							settings.getBiggestExternalExcludedHogFiles()))
 						strValues.add("File: "
 								+ pair.getFile().getAbsoluteFile() + "\nSize: "
 								+ Utility.getCorrectByteSize(pair.getSize()));
 
-					if (((MainActivity)getActivity()).getSettings().getIntFileCount() <= strValues.size())
+					if (settings.getIntFileCount() <= strValues.size())
 						break;
 				}
 			} else {
 				for (Pair pair : hogFiles.getHogFiles()) {
 					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							((MainActivity)getActivity()).getSettings().getSmallestExternalExcludedHogFiles()))
+							settings.getSmallestExternalExcludedHogFiles()))
 						strValues.add("File: "
 								+ pair.getFile().getAbsoluteFile() + "\nSize: "
 								+ Utility.getCorrectByteSize(pair.getSize()));
 
-					if (((MainActivity)getActivity()).getSettings().getIntFileCount() <= strValues.size())
+					if (settings.getIntFileCount() <= strValues.size())
 						break;
 				}
 			}
@@ -158,23 +176,23 @@ public class FileListFragment extends ListFragment {
 			if (isBiggestFiles) {
 				for (Pair pair : hogFiles.getHogFiles()) {
 					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							((MainActivity)getActivity()).getSettings().getBiggestRootExcludedHogFiles()))
+							settings.getBiggestRootExcludedHogFiles()))
 						strValues.add("File: "
 								+ pair.getFile().getAbsoluteFile() + "\nSize: "
 								+ Utility.getCorrectByteSize(pair.getSize()));
 
-					if (((MainActivity)getActivity()).getSettings().getIntFileCount() <= strValues.size())
+					if (settings.getIntFileCount() <= strValues.size())
 						break;
 				}
 			} else {
 				for (Pair pair : hogFiles.getHogFiles()) {
 					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							((MainActivity)getActivity()).getSettings().getSmallestRootExcludedHogFiles()))
+							settings.getSmallestRootExcludedHogFiles()))
 						strValues.add("File: "
 								+ pair.getFile().getAbsoluteFile() + "\nSize: "
 								+ Utility.getCorrectByteSize(pair.getSize()));
 
-					if (((MainActivity)getActivity()).getSettings().getIntFileCount() <= strValues.size())
+					if (settings.getIntFileCount() <= strValues.size())
 						break;
 				}
 			}
@@ -218,43 +236,43 @@ public class FileListFragment extends ListFragment {
 			case DialogInterface.BUTTON_NEUTRAL:
 				// Exclude File
 				Log.i(TAG, clickedFile.getPath() + " added to excludedHogFiles");
-				switch (((MainActivity)getActivity()).getSettings().getSelectedSearchDirectory()) {
+				switch (settings.getSelectedSearchDirectory()) {
 				case Settings.EXTERNAL_DIRECTORY:
 					if (isBiggestFiles)
-						((MainActivity)getActivity()).getSettings().getBiggestExternalExcludedHogFiles().add(
+						settings.getBiggestExternalExcludedHogFiles().add(
 								clickedFile);
 					else
-						((MainActivity)getActivity()).getSettings().getSmallestExternalExcludedHogFiles().add(
+						settings.getSmallestExternalExcludedHogFiles().add(
 								clickedFile);
 					break;
 				case Settings.ROOT_DIRECTORY:
 					if (isBiggestFiles)
-						((MainActivity)getActivity()).getSettings().getBiggestRootExcludedHogFiles().add(
+						settings.getBiggestRootExcludedHogFiles().add(
 								clickedFile);
 					else
-						((MainActivity)getActivity()).getSettings().getSmallestRootExcludedHogFiles().add(
+						settings.getSmallestRootExcludedHogFiles().add(
 								clickedFile);
 					break;
 				}
 
-				FileIO.writeObject(((MainActivity)getActivity()).getSettings(), getActivity()
-						.getApplicationContext(), Constants.SETTINGS_FILE);
-				switch (((MainActivity)getActivity()).getSettings().getSelectedSearchDirectory()) {
+				// FileIO.writeObject(settings, getActivity()
+				// .getApplicationContext(), Constants.SETTINGS_FILE);
+				switch (settings.getSelectedSearchDirectory()) {
 				case Settings.EXTERNAL_DIRECTORY:
 					if (isBiggestFiles
 							&& (hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings()
+									- settings
 											.getBiggestExternalExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+											.size() < settings
 										.getIntFileCount())) {
 						Log.i(TAG, "Refresh on biggest files");
 
 						((MainActivity) getActivity()).refresh();
 					} else if (!isBiggestFiles
 							&& (hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings()
+									- settings
 											.getSmallestExternalExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+											.size() < settings
 										.getIntFileCount())) {
 						Log.i(TAG, "Refresh on smallest files");
 
@@ -267,17 +285,17 @@ public class FileListFragment extends ListFragment {
 				case Settings.ROOT_DIRECTORY:
 					if (isBiggestFiles
 							&& (hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings().getBiggestRootExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+									- settings.getBiggestRootExcludedHogFiles()
+											.size() < settings
 										.getIntFileCount())) {
 						Log.i(TAG, "Refresh on biggest files");
 
 						((MainActivity) getActivity()).refresh();
 					} else if (!isBiggestFiles
 							&& (hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings()
+									- settings
 											.getSmallestRootExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+											.size() < settings
 										.getIntFileCount())) {
 						Log.i(TAG, "Refresh on smallest files");
 
@@ -331,21 +349,21 @@ public class FileListFragment extends ListFragment {
 				if (Constants.debugOn)
 					FileIO.writeFile(strOutput, "FileHog_Output.txt");
 
-				switch (((MainActivity)getActivity()).getSettings().getSelectedSearchDirectory()) {
+				switch (settings.getSelectedSearchDirectory()) {
 				case Settings.EXTERNAL_DIRECTORY:
 					if (isBiggestFiles
 							&& hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings()
+									- settings
 											.getBiggestExternalExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+											.size() < settings
 										.getIntFileCount()) {
 
 						((MainActivity) getActivity()).refresh();
 					} else if (!isBiggestFiles
 							&& hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings()
+									- settings
 											.getSmallestExternalExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+											.size() < settings
 										.getIntFileCount()) {
 
 						((MainActivity) getActivity()).refresh();
@@ -356,16 +374,16 @@ public class FileListFragment extends ListFragment {
 				case Settings.ROOT_DIRECTORY:
 					if (isBiggestFiles
 							&& hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings().getBiggestRootExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+									- settings.getBiggestRootExcludedHogFiles()
+											.size() < settings
 										.getIntFileCount()) {
 
 						((MainActivity) getActivity()).refresh();
 					} else if (!isBiggestFiles
 							&& hogFiles.getHogFiles().size()
-									- ((MainActivity)getActivity()).getSettings()
+									- settings
 											.getSmallestRootExcludedHogFiles()
-											.size() < ((MainActivity)getActivity()).getSettings()
+											.size() < settings
 										.getIntFileCount()) {
 
 						((MainActivity) getActivity()).refresh();

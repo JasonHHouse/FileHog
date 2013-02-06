@@ -155,6 +155,14 @@
  * Revision v 3.03
  * 
  * Overhauled the rotation code to better check for and handle refreshes 
+ * 
+ * Revision v 3.04
+ * 
+ * Made Settings into a singleton 
+ * Changed saving to not require context
+ * Changed FileListFragment to default constructor 
+ * and pass a bundle of information
+ * Fixed the on app killed, blank screen issue
  */
 
 package com.houseperez.filehog;
@@ -171,6 +179,7 @@ import android.os.Bundle;
 import android.app.AlertDialog;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
@@ -206,13 +215,14 @@ public class MainActivity extends FragmentActivity {
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 	private ViewPager mViewPager;
 	private FileListFragment[] fileListFragments;
+	private static File path;
 
 	public void terminate() {
 		threadRunning = false;
 	}
 
-	public Settings getSettings() {
-		return settings;
+	public static File getFilePath() {
+		return path;
 	}
 
 	@Override
@@ -220,6 +230,8 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		Log.i(TAG, "onCreate()");
+
+		path = getDir("obj", Context.MODE_PRIVATE);
 
 		checkVersion();
 
@@ -236,6 +248,7 @@ public class MainActivity extends FragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		Log.i(TAG, "onResume()");
+
 	}
 
 	@Override
@@ -247,24 +260,11 @@ public class MainActivity extends FragmentActivity {
 		int intRotation = mDisplay.getRotation();
 		Log.i(TAG, "getRotation(): " + intRotation);
 
-		if ((settings = (Settings) FileIO.readObject(getApplicationContext(),
-				Constants.SETTINGS_FILE)) == null) {
-			Log.i(TAG, "FileIO.readSettings(): null");
-			settings = new Settings(new ArrayList<File>(0),
-					new ArrayList<File>(0), new ArrayList<File>(0),
-					new ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
-					Settings.EXTERNAL_DIRECTORY, true, Settings.DAY_IN_MILLI,
-					false, Settings.DAILY, intRotation);
-			FileIO.writeObject(settings, getApplicationContext(),
-					Constants.SETTINGS_FILE);
-		} else {
-			Log.i(TAG, "FileIO.readSettings(): object");
-		}
+		settings = Settings.getInstance(intRotation);
 
 		needToRefreshList = false;
 
-		if (FileIO.readObject(getApplicationContext(),
-				Constants.RELEASE_OF_LIABILITY_FILE) == null) {
+		if (FileIO.readObject(Constants.RELEASE_OF_LIABILITY_FILE, path) == null) {
 			releaseOfLiabilityDialog = buildReleaseOfLiabilityDialog().create();
 			releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
 			releaseOfLiabilityDialog.show();
@@ -277,20 +277,9 @@ public class MainActivity extends FragmentActivity {
 
 			needToRefreshList = settings.isOnOpenRefresh();
 			settings.setOnOpenRefresh(false);
-			FileIO.writeObject(settings, getApplicationContext(),
-					Constants.SETTINGS_FILE);
+			FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
+
 			initalizeAndRefresh();
-
-			Log.i(TAG, "mSectionsPagerAdapter: "
-					+ (mSectionsPagerAdapter == null ? true : false));
-			if (mSectionsPagerAdapter == null) {
-				mSectionsPagerAdapter = new SectionsPagerAdapter(
-						getSupportFragmentManager());
-
-				// Set up the ViewPager with the sections adapter.
-				mViewPager = (ViewPager) findViewById(R.id.pager);
-				mViewPager.setAdapter(mSectionsPagerAdapter);
-			}
 		}
 
 		super.onStart();
@@ -315,14 +304,25 @@ public class MainActivity extends FragmentActivity {
 		if (releaseOfLiabilityDialog != null)
 			releaseOfLiabilityDialog.dismiss();
 
-		FileIO.writeObject(settings, getApplicationContext(),
-				Constants.SETTINGS_FILE);
+		FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.i(TAG, "onDestroy()");
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		super.onSaveInstanceState(savedInstanceState);
+		Log.i(TAG, "onSaveInstanceState()");
+	}
+
+	@Override
+	public void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		Log.i(TAG, "onRestoreInstanceState()");
 	}
 
 	@Override
@@ -445,8 +445,7 @@ public class MainActivity extends FragmentActivity {
 											}
 
 									FileIO.writeObject(settings,
-											getApplicationContext(),
-											Constants.SETTINGS_FILE);
+											Constants.SETTINGS_FILE, path);
 
 									switch (settings
 											.getSelectedSearchDirectory()) {
@@ -534,25 +533,29 @@ public class MainActivity extends FragmentActivity {
 
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
+			Log.i(TAG, "SectionsPagerAdapter()");
+
+			for (int i = 0; i < 2; i++) {
+				Log.i(TAG, "getItem() position: " + i);
+				Log.i(TAG, "smallestHogFiles.getHogFiles().size(): "
+						+ smallestHogFiles.getHogFiles().size());
+				Log.i(TAG, "biggestHogFiles.getHogFiles().size(): "
+						+ biggestHogFiles.getHogFiles().size());
+
+				fileListFragments[i] = new FileListFragment();
+				Bundle args = new Bundle();
+				args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
+				args.putSerializable(Constants.HOG_FILES,
+						(i == 1 ? smallestHogFiles : biggestHogFiles));
+				args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false
+						: true));
+				fileListFragments[i].setArguments(args);
+				fileListFragments[i].setRetainInstance(true);
+			}
 		}
 
 		@Override
 		public Fragment getItem(int position) {
-			// getItem is called to instantiate the fragment for the given page.
-			// Return a DummySectionFragment (defined as a static inner class
-			// below) with the page number as its lone argument.
-
-			Log.i(TAG, "getItem() position: " + position);
-			Log.i(TAG, "smallestHogFiles: " + smallestHogFiles);
-			Log.i(TAG, "biggestHogFiles: " + biggestHogFiles);
-
-			fileListFragments[position] = new FileListFragment(
-					(position == 1 ? smallestHogFiles : biggestHogFiles),
-					(position == 1 ? false : true));
-			Bundle args = new Bundle();
-			args.putInt(FileListFragment.ARG_SECTION_NUMBER, position + 1);
-			fileListFragments[position].setArguments(args);
-			fileListFragments[position].setRetainInstance(true);
 			return fileListFragments[position];
 		}
 
@@ -581,17 +584,15 @@ public class MainActivity extends FragmentActivity {
 
 	private void checkVersion() {
 		Log.i(TAG, "checkVersion() starting");
-		Double tempVersion = (Double) FileIO.readObject(
-				getApplicationContext(), Constants.VERSION_FILE);
+		Double tempVersion = (Double) FileIO.readObject(Constants.VERSION_FILE,
+				path);
 		if (tempVersion == null) {
 			Log.i(TAG, "tempVersion == null");
 			clearApplicationData();
-			FileIO.writeObject(Constants.VERSION, getApplicationContext(),
-					Constants.VERSION_FILE);
+			FileIO.writeObject(Constants.VERSION, Constants.VERSION_FILE, path);
 		} else if (tempVersion != Constants.VERSION) {
 			clearApplicationData();
-			FileIO.writeObject(Constants.VERSION, getApplicationContext(),
-					Constants.VERSION_FILE);
+			FileIO.writeObject(Constants.VERSION, Constants.VERSION_FILE, path);
 		} else {
 			Log.i(TAG, "tempVersion == VERSION");
 		}
@@ -632,17 +633,17 @@ public class MainActivity extends FragmentActivity {
 		switch (settings.getSelectedSearchDirectory()) {
 		case Settings.EXTERNAL_DIRECTORY:
 			biggestHogFiles = (HogFileList) FileIO.readObject(
-					getApplicationContext(),
-					Constants.BIGGEST_EXTERNAL_HOGFILES);
+
+			Constants.BIGGEST_EXTERNAL_HOGFILES, path);
 			smallestHogFiles = (HogFileList) FileIO.readObject(
-					getApplicationContext(),
-					Constants.SMALLEST_EXTERNAL_HOGFILES);
+
+			Constants.SMALLEST_EXTERNAL_HOGFILES, path);
 			break;
 		case Settings.ROOT_DIRECTORY:
 			biggestHogFiles = (HogFileList) FileIO.readObject(
-					getApplicationContext(), Constants.BIGGEST_ROOT_HOGFILES);
+					Constants.BIGGEST_ROOT_HOGFILES, path);
 			smallestHogFiles = (HogFileList) FileIO.readObject(
-					getApplicationContext(), Constants.SMALLEST_ROOT_HOGFILES);
+					Constants.SMALLEST_ROOT_HOGFILES, path);
 			break;
 		default:
 			biggestHogFiles = null;
@@ -666,24 +667,11 @@ public class MainActivity extends FragmentActivity {
 								Log.i(TAG, "User agreed on " + strOutput);
 
 								FileIO.writeObject(strOutput,
-										getApplicationContext(),
-										Constants.RELEASE_OF_LIABILITY_FILE);
+										Constants.RELEASE_OF_LIABILITY_FILE,
+										path);
 								needToRefreshList = settings.isOnOpenRefresh();
 								initalizeAndRefresh();
 
-								Log.i(TAG, "mSectionsPagerAdapter: "
-										+ (mSectionsPagerAdapter == null ? true
-												: false));
-								if (mSectionsPagerAdapter == null) {
-									mSectionsPagerAdapter = new SectionsPagerAdapter(
-											getSupportFragmentManager());
-
-									// Set up the ViewPager with the sections
-									// adapter.
-									mViewPager = (ViewPager) findViewById(R.id.pager);
-									mViewPager
-											.setAdapter(mSectionsPagerAdapter);
-								}
 							}
 						})
 				.setNegativeButton("I do not agree",
@@ -812,35 +800,44 @@ public class MainActivity extends FragmentActivity {
 				switch (settings.getSelectedSearchDirectory()) {
 				case Settings.EXTERNAL_DIRECTORY:
 					FileIO.writeObject(biggestHogFiles,
-							getApplicationContext(),
-							Constants.BIGGEST_EXTERNAL_HOGFILES);
+							Constants.BIGGEST_EXTERNAL_HOGFILES, path);
 					FileIO.writeObject(smallestHogFiles,
-							getApplicationContext(),
-							Constants.SMALLEST_EXTERNAL_HOGFILES);
+							Constants.SMALLEST_EXTERNAL_HOGFILES, path);
 					break;
 				case Settings.ROOT_DIRECTORY:
 					FileIO.writeObject(biggestHogFiles,
-							getApplicationContext(),
-							Constants.BIGGEST_ROOT_HOGFILES);
+							Constants.BIGGEST_ROOT_HOGFILES, path);
 					FileIO.writeObject(smallestHogFiles,
-							getApplicationContext(),
-							Constants.SMALLEST_ROOT_HOGFILES);
+							Constants.SMALLEST_ROOT_HOGFILES, path);
 					break;
 				}
 
 				runOnUiThread(new Runnable() {
 					public void run() {
 
-						for (int i = 0; i < fileListFragments.length; i++) {
-							Log.i(TAG, "fileListFragments[" + i + "] is null: "
-									+ (fileListFragments[i] != null));
-							if (fileListFragments[i] != null) {
-								fileListFragments[i]
-										.setHogFiles((i == 1 ? smallestHogFiles
-												: biggestHogFiles));
-								fileListFragments[i].resetListView();
-							}
+						if (mSectionsPagerAdapter == null) {
+							Log.i(TAG, "mSectionsPagerAdapter == null");
+							mSectionsPagerAdapter = new SectionsPagerAdapter(
+									getSupportFragmentManager());
 						}
+						// Set up the ViewPager with the sections adapter.
+						if (mViewPager == null) {
+							Log.i(TAG, "mViewPager == null");
+							mViewPager = (ViewPager) findViewById(R.id.pager);
+							mViewPager.setAdapter(mSectionsPagerAdapter);
+						}
+
+						/*
+						 * for (int i = 0; i < fileListFragments.length; i++) {
+						 * Log.i(TAG, "fileListFragments[" + i + "] is null: " +
+						 * (fileListFragments[i] == null)); if
+						 * (fileListFragments[i] != null) { fileListFragments[i]
+						 * .setHogFiles((i == 1 ? smallestHogFiles :
+						 * biggestHogFiles));
+						 * fileListFragments[i].resetListView(); }
+						 * 
+						 * }
+						 */
 
 						try {
 							progressDialog.dismiss();

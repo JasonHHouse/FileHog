@@ -4,10 +4,15 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import com.houseperez.filehog.MainActivity;
+
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 public class Settings implements Serializable, Parcelable {
+
+	public static final String TAG = "Settings";
 
 	// Constants
 	public static final int EXTERNAL_DIRECTORY = 0;
@@ -37,6 +42,7 @@ public class Settings implements Serializable, Parcelable {
 	private static final long serialVersionUID = -1334344095817501479L;
 
 	// Global
+	private static Settings instance = null;
 	private ArrayList<File> biggestExternalExcludedHogFiles;
 	private ArrayList<File> smallestExternalExcludedHogFiles;
 	private ArrayList<File> biggestRootExcludedHogFiles;
@@ -48,13 +54,12 @@ public class Settings implements Serializable, Parcelable {
 	private int researchFrequency;
 	private int intRotation;
 
-	public Settings(ArrayList<File> biggestExternalExcludedHogFiles,
+	private Settings(ArrayList<File> biggestExternalExcludedHogFiles,
 			ArrayList<File> smallestExternalExcludedHogFiles,
 			ArrayList<File> biggestRootExcludedHogFiles,
 			ArrayList<File> smallestRootExcludedHogFiles, int intFileCount,
-			int selectedSearchDirectory, boolean findBiggestFiles,
-			long timeToDelayRefresh, boolean onOpenRefresh,
-			int researchFrequency, int intRotation) {
+			int selectedSearchDirectory, long timeToDelayRefresh,
+			boolean onOpenRefresh, int researchFrequency, int intRotation) {
 		super();
 		this.biggestExternalExcludedHogFiles = biggestExternalExcludedHogFiles;
 		this.smallestExternalExcludedHogFiles = smallestExternalExcludedHogFiles;
@@ -68,36 +73,27 @@ public class Settings implements Serializable, Parcelable {
 		this.intRotation = intRotation;
 	}
 
-	public int getIntRotation() {
-		return intRotation;
-	}
+	public static Settings getInstance(int intRotation) {
+		if (instance == null) {
 
-	public void setIntRotation(int intRotation) {
-		this.intRotation = intRotation;
-	}
+			if ((instance = (Settings) FileIO.readObject(
+					Constants.SETTINGS_FILE, MainActivity.getFilePath())) == null) {
+				Log.i(TAG, "FileIO.readSettings(): null");
+				instance = new Settings(new ArrayList<File>(0),
+						new ArrayList<File>(0), new ArrayList<File>(0),
+						new ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
+						Settings.EXTERNAL_DIRECTORY, Settings.DAY_IN_MILLI,
+						false, Settings.DAILY, intRotation);
+				FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+						MainActivity.getFilePath());
+			} else {
+				Log.i(TAG, "FileIO.readSettings(): object");
+			}
+			Log.i(TAG, "instance null");
 
-	public int getResearchFrequency() {
-		return researchFrequency;
-	}
-
-	public void setResearchFrequency(int researchFrequency) {
-		this.researchFrequency = researchFrequency;
-	}
-
-	public boolean isOnOpenRefresh() {
-		return onOpenRefresh;
-	}
-
-	public void setOnOpenRefresh(boolean onOpenRefresh) {
-		this.onOpenRefresh = onOpenRefresh;
-	}
-
-	public long getTimeToDelayRefresh() {
-		return timeToDelayRefresh;
-	}
-
-	public void setTimeToDelayRefresh(long hoursToDelayRefresh) {
-		this.timeToDelayRefresh = hoursToDelayRefresh;
+		} else
+			Log.i(TAG, "instance not null");
+		return instance;
 	}
 
 	public ArrayList<File> getBiggestExternalExcludedHogFiles() {
@@ -150,6 +146,38 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setSelectedSearchDirectory(int selectedSearchDirectory) {
 		this.selectedSearchDirectory = selectedSearchDirectory;
+	}
+
+	public long getTimeToDelayRefresh() {
+		return timeToDelayRefresh;
+	}
+
+	public void setTimeToDelayRefresh(long timeToDelayRefresh) {
+		this.timeToDelayRefresh = timeToDelayRefresh;
+	}
+
+	public boolean isOnOpenRefresh() {
+		return onOpenRefresh;
+	}
+
+	public void setOnOpenRefresh(boolean onOpenRefresh) {
+		this.onOpenRefresh = onOpenRefresh;
+	}
+
+	public int getResearchFrequency() {
+		return researchFrequency;
+	}
+
+	public void setResearchFrequency(int researchFrequency) {
+		this.researchFrequency = researchFrequency;
+	}
+
+	public int getIntRotation() {
+		return intRotation;
+	}
+
+	public void setIntRotation(int intRotation) {
+		this.intRotation = intRotation;
 	}
 
 	@Override
