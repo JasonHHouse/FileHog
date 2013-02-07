@@ -71,6 +71,8 @@ public class Settings implements Serializable, Parcelable {
 		this.onOpenRefresh = onOpenRefresh;
 		this.researchFrequency = researchFrequency;
 		this.intRotation = intRotation;
+		FileIO.readObject(Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public static Settings getInstance(int intRotation) {
@@ -103,6 +105,8 @@ public class Settings implements Serializable, Parcelable {
 	public void setBiggestExternalExcludedHogFiles(
 			ArrayList<File> biggestExternalExcludedHogFiles) {
 		this.biggestExternalExcludedHogFiles = biggestExternalExcludedHogFiles;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public ArrayList<File> getSmallestExternalExcludedHogFiles() {
@@ -112,6 +116,8 @@ public class Settings implements Serializable, Parcelable {
 	public void setSmallestExternalExcludedHogFiles(
 			ArrayList<File> smallestExternalExcludedHogFiles) {
 		this.smallestExternalExcludedHogFiles = smallestExternalExcludedHogFiles;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public ArrayList<File> getBiggestRootExcludedHogFiles() {
@@ -121,6 +127,8 @@ public class Settings implements Serializable, Parcelable {
 	public void setBiggestRootExcludedHogFiles(
 			ArrayList<File> biggestRootExcludedHogFiles) {
 		this.biggestRootExcludedHogFiles = biggestRootExcludedHogFiles;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public ArrayList<File> getSmallestRootExcludedHogFiles() {
@@ -130,6 +138,8 @@ public class Settings implements Serializable, Parcelable {
 	public void setSmallestRootExcludedHogFiles(
 			ArrayList<File> smallestRootExcludedHogFiles) {
 		this.smallestRootExcludedHogFiles = smallestRootExcludedHogFiles;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public int getIntFileCount() {
@@ -138,6 +148,8 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setIntFileCount(int intFileCount) {
 		this.intFileCount = intFileCount;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public int getSelectedSearchDirectory() {
@@ -146,6 +158,8 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setSelectedSearchDirectory(int selectedSearchDirectory) {
 		this.selectedSearchDirectory = selectedSearchDirectory;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public long getTimeToDelayRefresh() {
@@ -154,6 +168,8 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setTimeToDelayRefresh(long timeToDelayRefresh) {
 		this.timeToDelayRefresh = timeToDelayRefresh;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public boolean isOnOpenRefresh() {
@@ -162,6 +178,8 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setOnOpenRefresh(boolean onOpenRefresh) {
 		this.onOpenRefresh = onOpenRefresh;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public int getResearchFrequency() {
@@ -170,6 +188,8 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setResearchFrequency(int researchFrequency) {
 		this.researchFrequency = researchFrequency;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	public int getIntRotation() {
@@ -178,6 +198,8 @@ public class Settings implements Serializable, Parcelable {
 
 	public void setIntRotation(int intRotation) {
 		this.intRotation = intRotation;
+		FileIO.writeObject(instance, Constants.SETTINGS_FILE,
+				MainActivity.getFilePath());
 	}
 
 	@Override

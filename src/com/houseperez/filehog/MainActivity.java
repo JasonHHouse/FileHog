@@ -163,6 +163,10 @@
  * Changed FileListFragment to default constructor 
  * and pass a bundle of information
  * Fixed the on app killed, blank screen issue
+ * 
+ * Revision v 3.05
+ * 
+ * Fixed the settings not updating issue
  */
 
 package com.houseperez.filehog;
@@ -277,7 +281,7 @@ public class MainActivity extends FragmentActivity {
 
 			needToRefreshList = settings.isOnOpenRefresh();
 			settings.setOnOpenRefresh(false);
-			FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
+			// FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 
 			initalizeAndRefresh();
 		}
@@ -304,7 +308,7 @@ public class MainActivity extends FragmentActivity {
 		if (releaseOfLiabilityDialog != null)
 			releaseOfLiabilityDialog.dismiss();
 
-		FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
+		// FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 	}
 
 	@Override
@@ -444,8 +448,8 @@ public class MainActivity extends FragmentActivity {
 												break;
 											}
 
-									FileIO.writeObject(settings,
-											Constants.SETTINGS_FILE, path);
+									// FileIO.writeObject(settings,
+									// Constants.SETTINGS_FILE, path);
 
 									switch (settings
 											.getSelectedSearchDirectory()) {
@@ -536,12 +540,6 @@ public class MainActivity extends FragmentActivity {
 			Log.i(TAG, "SectionsPagerAdapter()");
 
 			for (int i = 0; i < 2; i++) {
-				Log.i(TAG, "getItem() position: " + i);
-				Log.i(TAG, "smallestHogFiles.getHogFiles().size(): "
-						+ smallestHogFiles.getHogFiles().size());
-				Log.i(TAG, "biggestHogFiles.getHogFiles().size(): "
-						+ biggestHogFiles.getHogFiles().size());
-
 				fileListFragments[i] = new FileListFragment();
 				Bundle args = new Bundle();
 				args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
@@ -633,11 +631,9 @@ public class MainActivity extends FragmentActivity {
 		switch (settings.getSelectedSearchDirectory()) {
 		case Settings.EXTERNAL_DIRECTORY:
 			biggestHogFiles = (HogFileList) FileIO.readObject(
-
-			Constants.BIGGEST_EXTERNAL_HOGFILES, path);
+					Constants.BIGGEST_EXTERNAL_HOGFILES, path);
 			smallestHogFiles = (HogFileList) FileIO.readObject(
-
-			Constants.SMALLEST_EXTERNAL_HOGFILES, path);
+					Constants.SMALLEST_EXTERNAL_HOGFILES, path);
 			break;
 		case Settings.ROOT_DIRECTORY:
 			biggestHogFiles = (HogFileList) FileIO.readObject(
@@ -714,13 +710,16 @@ public class MainActivity extends FragmentActivity {
 
 		// listView.setEnabled(false);
 		// listView.setAdapter(null);
-		for (FileListFragment fileListFragment : fileListFragments)
+		for (FileListFragment fileListFragment : fileListFragments) {
 			if (fileListFragment != null) {
-				fileListFragment.getListView().setEnabled(false);
-				fileListFragment.getListView().setAdapter(null);
+				if (fileListFragment.isAdded()) {
+					fileListFragment.getListView().setEnabled(false);
+					fileListFragment.getListView().setAdapter(null);
+				}
 			}
+		}
 
-		readHogFiles();
+		readHogFiles(); 
 
 		if (biggestHogFiles == null || smallestHogFiles == null) {
 			// First time through the app
@@ -827,17 +826,17 @@ public class MainActivity extends FragmentActivity {
 							mViewPager.setAdapter(mSectionsPagerAdapter);
 						}
 
-						/*
-						 * for (int i = 0; i < fileListFragments.length; i++) {
-						 * Log.i(TAG, "fileListFragments[" + i + "] is null: " +
-						 * (fileListFragments[i] == null)); if
-						 * (fileListFragments[i] != null) { fileListFragments[i]
-						 * .setHogFiles((i == 1 ? smallestHogFiles :
-						 * biggestHogFiles));
-						 * fileListFragments[i].resetListView(); }
-						 * 
-						 * }
-						 */
+						for (int i = 0; i < fileListFragments.length; i++) {
+							Log.i(TAG, "fileListFragments[" + i + "] is null: "
+									+ (fileListFragments[i] == null));
+							if (fileListFragments[i] != null) {
+								fileListFragments[i]
+										.setHogFiles((i == 1 ? smallestHogFiles
+												: biggestHogFiles));
+								fileListFragments[i].resetListView();
+							}
+
+						}
 
 						try {
 							progressDialog.dismiss();

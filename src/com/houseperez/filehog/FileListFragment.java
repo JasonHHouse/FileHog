@@ -52,10 +52,14 @@ public class FileListFragment extends ListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		Log.i(TAG, "onActivityCreated()");
-		
-		this.hogFiles = (HogFileList)getArguments().getSerializable(Constants.HOG_FILES);
-		this.isBiggestFiles = getArguments().getBoolean(Constants.IS_BIGGEST_FILES);
-		
+
+		this.hogFiles = (HogFileList) getArguments().getSerializable(
+				Constants.HOG_FILES);
+		this.isBiggestFiles = getArguments().getBoolean(
+				Constants.IS_BIGGEST_FILES);
+
+		resetListView();
+
 		ArrayList<String> strValues = new ArrayList<String>();
 		if (hogFiles != null)
 			for (Pair pair : hogFiles.getHogFiles()) {
@@ -84,12 +88,12 @@ public class FileListFragment extends ListFragment {
 	}
 
 	@Override
-	public void onResume(){
+	public void onResume() {
 		super.onResume();
 		Log.i(TAG, "onResume()");
 		resetListView();
 	}
-	
+
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		String strFile = ((String) l.getItemAtPosition((int) id));
@@ -124,87 +128,89 @@ public class FileListFragment extends ListFragment {
 
 		ArrayList<String> strValues = new ArrayList<String>();
 
-		if (Constants.debugOn)
-			Log.i(TAG,
-					"settings.getIntFileCount(): " + settings.getIntFileCount());
-
+		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
 		Log.i(TAG,
 				"(MainActivity)getActivity() is "
 						+ (((MainActivity) getActivity()) == null ? "null"
 								: "not null"));
 
-		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
-		
-		Log.i(TAG,
-				"settings.EXTERNAL_DIRECTORY: "
-						+ (settings.getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY));
+		if (settings != null) {
+			switch (settings.getSelectedSearchDirectory()) {
+			case (Settings.EXTERNAL_DIRECTORY):
+				if (isBiggestFiles) {
+					for (Pair pair : hogFiles.getHogFiles()) {
+						if (!Utility.isInExcludedHogFiles(pair.getFile(),
+								settings.getBiggestExternalExcludedHogFiles()))
+							strValues
+									.add("File: "
+											+ pair.getFile().getAbsoluteFile()
+											+ "\nSize: "
+											+ Utility.getCorrectByteSize(pair
+													.getSize()));
 
-		switch (settings.getSelectedSearchDirectory()) {
-		case (Settings.EXTERNAL_DIRECTORY):
-			if (Constants.debugOn)
-				Log.i(TAG,
-						"settings.getIntFileCount() + settings.getBiggestExternalExcludedHogFiles().size(): "
-								+ (settings.getIntFileCount() + settings
-										.getBiggestExternalExcludedHogFiles()
-										.size()));
+						if (settings.getIntFileCount() <= strValues.size())
+							break;
+					}
+				} else {
+					for (Pair pair : hogFiles.getHogFiles()) {
+						if (!Utility.isInExcludedHogFiles(pair.getFile(),
+								settings.getSmallestExternalExcludedHogFiles()))
+							strValues
+									.add("File: "
+											+ pair.getFile().getAbsoluteFile()
+											+ "\nSize: "
+											+ Utility.getCorrectByteSize(pair
+													.getSize()));
 
-			if (isBiggestFiles) {
-				for (Pair pair : hogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getBiggestExternalExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
-
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
+						if (settings.getIntFileCount() <= strValues.size())
+							break;
+					}
 				}
-			} else {
-				for (Pair pair : hogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getSmallestExternalExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
+				break;
+			case Settings.ROOT_DIRECTORY:
+				if (isBiggestFiles) {
+					for (Pair pair : hogFiles.getHogFiles()) {
+						if (!Utility.isInExcludedHogFiles(pair.getFile(),
+								settings.getBiggestRootExcludedHogFiles()))
+							strValues
+									.add("File: "
+											+ pair.getFile().getAbsoluteFile()
+											+ "\nSize: "
+											+ Utility.getCorrectByteSize(pair
+													.getSize()));
 
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
+						if (settings.getIntFileCount() <= strValues.size())
+							break;
+					}
+				} else {
+					for (Pair pair : hogFiles.getHogFiles()) {
+						if (!Utility.isInExcludedHogFiles(pair.getFile(),
+								settings.getSmallestRootExcludedHogFiles()))
+							strValues
+									.add("File: "
+											+ pair.getFile().getAbsoluteFile()
+											+ "\nSize: "
+											+ Utility.getCorrectByteSize(pair
+													.getSize()));
+
+						if (settings.getIntFileCount() <= strValues.size())
+							break;
+					}
 				}
+				break;
 			}
-			break;
-		case Settings.ROOT_DIRECTORY:
-			if (isBiggestFiles) {
-				for (Pair pair : hogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getBiggestRootExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
+			
+			String[] values = strValues.toArray(new String[strValues.size()]);
+			Log.i(TAG, "values.length: " + values.length);
 
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
-				}
-			} else {
-				for (Pair pair : hogFiles.getHogFiles()) {
-					if (!Utility.isInExcludedHogFiles(pair.getFile(),
-							settings.getSmallestRootExcludedHogFiles()))
-						strValues.add("File: "
-								+ pair.getFile().getAbsoluteFile() + "\nSize: "
-								+ Utility.getCorrectByteSize(pair.getSize()));
-
-					if (settings.getIntFileCount() <= strValues.size())
-						break;
-				}
-			}
-			break;
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
+					android.R.layout.simple_list_item_1, android.R.id.text1, values);
+			setListAdapter(adapter);
+			// adapter.notifyDataSetChanged();
+			// this.setListAdapter(adapter);
+			this.getListView().setEnabled(true);
 		}
 
-		String values[] = strValues.toArray(new String[strValues.size()]);
-
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-				android.R.layout.simple_list_item_1, android.R.id.text1, values);
-		setListAdapter(adapter);
-		this.getListView().setEnabled(true);
 	}
 
 	DialogInterface.OnClickListener dialogClickListener_DeleteCopyOrExclude = new DialogInterface.OnClickListener() {

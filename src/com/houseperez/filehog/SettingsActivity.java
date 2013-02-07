@@ -1,7 +1,6 @@
 package com.houseperez.filehog;
 
 import com.houseperez.util.Constants;
-import com.houseperez.util.FileIO;
 import com.houseperez.util.Settings;
 
 import android.os.Bundle;
@@ -43,8 +42,7 @@ public class SettingsActivity extends Activity {
 		super.onStop();
 		Log.i(TAG, "onStart(): " + TAG);
 
-		settings = (Settings) FileIO.readObject(Constants.SETTINGS_FILE,
-				MainActivity.getFilePath());
+		settings = Settings.getInstance(0);
 
 		/*
 		 * if (settings == null) settings = new Settings(new ArrayList<File>(0),
@@ -99,8 +97,8 @@ public class SettingsActivity extends Activity {
 				settings.setIntFileCount(progress + 1);
 				((TextView) findViewById(R.id.txtFileCountNumber))
 						.setText(Integer.toString(progress + 1));
-				FileIO.writeObject(settings, Constants.SETTINGS_FILE,
-						MainActivity.getFilePath());
+				//FileIO.writeObject(settings, Constants.SETTINGS_FILE,
+				//		MainActivity.getFilePath());
 				settings.setOnOpenRefresh(false);
 			}
 		}
@@ -141,8 +139,8 @@ public class SettingsActivity extends Activity {
 				settings.setResearchFrequency(Settings.BI_WEEKLY);
 				break;
 			}
-			FileIO.writeObject(settings, Constants.SETTINGS_FILE,
-					MainActivity.getFilePath());
+			//FileIO.writeObject(settings, Constants.SETTINGS_FILE,
+			//		MainActivity.getFilePath());
 		}
 
 		@Override
@@ -174,8 +172,8 @@ public class SettingsActivity extends Activity {
 			}
 			break;
 		}
-		FileIO.writeObject(settings, Constants.SETTINGS_FILE,
-				MainActivity.getFilePath());
+		//FileIO.writeObject(settings, Constants.SETTINGS_FILE,
+		//		MainActivity.getFilePath());
 	}
 
 }
