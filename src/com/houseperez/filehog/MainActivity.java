@@ -186,6 +186,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -263,7 +264,6 @@ public class MainActivity extends FragmentActivity {
 		Display mDisplay = mWindowManager.getDefaultDisplay();
 		int intRotation = mDisplay.getRotation();
 		Log.i(TAG, "getRotation(): " + intRotation);
-
 		settings = Settings.getInstance(intRotation);
 
 		needToRefreshList = false;
@@ -283,7 +283,23 @@ public class MainActivity extends FragmentActivity {
 			settings.setOnOpenRefresh(false);
 			// FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 
+			if (isTablet(getApplicationContext())) {
+				Log.i(TAG, "isTablet: true");
+				for (int i = 0; i < 2; i++) {
+					fileListFragments[i] = new FileListFragment();
+					Bundle args = new Bundle();
+					args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
+					args.putSerializable(Constants.HOG_FILES,
+							(i == 1 ? smallestHogFiles : biggestHogFiles));
+					args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false
+							: true));
+					fileListFragments[i].setArguments(args);
+					fileListFragments[i].setRetainInstance(true);
+				}
+			}
+
 			initalizeAndRefresh();
+
 		}
 
 		super.onStart();
@@ -356,6 +372,12 @@ public class MainActivity extends FragmentActivity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	public boolean isTablet(Context context) {
+		boolean xlarge = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == 4);
+		boolean large = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE);
+		return (xlarge || large);
 	}
 
 	private void onClick_ExcludeFiles() {
@@ -719,7 +741,7 @@ public class MainActivity extends FragmentActivity {
 			}
 		}
 
-		readHogFiles(); 
+		readHogFiles();
 
 		if (biggestHogFiles == null || smallestHogFiles == null) {
 			// First time through the app
@@ -814,16 +836,18 @@ public class MainActivity extends FragmentActivity {
 				runOnUiThread(new Runnable() {
 					public void run() {
 
-						if (mSectionsPagerAdapter == null) {
-							Log.i(TAG, "mSectionsPagerAdapter == null");
-							mSectionsPagerAdapter = new SectionsPagerAdapter(
-									getSupportFragmentManager());
-						}
-						// Set up the ViewPager with the sections adapter.
-						if (mViewPager == null) {
-							Log.i(TAG, "mViewPager == null");
-							mViewPager = (ViewPager) findViewById(R.id.pager);
-							mViewPager.setAdapter(mSectionsPagerAdapter);
+						if (!isTablet(getApplicationContext())) {
+							if (mSectionsPagerAdapter == null) {
+								Log.i(TAG, "mSectionsPagerAdapter == null");
+								mSectionsPagerAdapter = new SectionsPagerAdapter(
+										getSupportFragmentManager());
+							}
+							// Set up the ViewPager with the sections adapter.
+							if (mViewPager == null) {
+								Log.i(TAG, "mViewPager == null");
+								mViewPager = (ViewPager) findViewById(R.id.pager);
+								mViewPager.setAdapter(mSectionsPagerAdapter);
+							}
 						}
 
 						for (int i = 0; i < fileListFragments.length; i++) {
