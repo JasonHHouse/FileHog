@@ -173,6 +173,10 @@
  * Edited read and write file to close the streams
  * Changed the number formatting for file size to fit international standards
  * 
+ * Revision v 3.07
+ * 
+ * Added Russian back in
+ * 
  */
 
 package com.houseperez.filehog;
