@@ -167,6 +167,12 @@
  * Revision v 3.05
  * 
  * Fixed the settings not updating issue
+ * 
+ * Revision v 3.06
+ * 
+ * Edited read and write file to close the streams
+ * Changed the number formatting for file size to fit international standards
+ * 
  */
 
 package com.houseperez.filehog;
@@ -273,9 +279,7 @@ public class MainActivity extends FragmentActivity {
 			releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
 			releaseOfLiabilityDialog.show();
 		} else {
-			Log.i(TAG,
-					"settings.getIntRotation() == intRotation: "
-							+ (settings.getIntRotation() == intRotation));
+			Log.i(TAG, "settings.getIntRotation() == intRotation: " + (settings.getIntRotation() == intRotation));
 			if (settings.getIntRotation() != intRotation)
 				settings.setIntRotation(intRotation);
 
@@ -289,10 +293,8 @@ public class MainActivity extends FragmentActivity {
 					fileListFragments[i] = new FileListFragment();
 					Bundle args = new Bundle();
 					args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-					args.putSerializable(Constants.HOG_FILES,
-							(i == 1 ? smallestHogFiles : biggestHogFiles));
-					args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false
-							: true));
+					args.putSerializable(Constants.HOG_FILES, (i == 1 ? smallestHogFiles : biggestHogFiles));
+					args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
 					fileListFragments[i].setArguments(args);
 					fileListFragments[i].setRetainInstance(true);
 				}
@@ -388,23 +390,19 @@ public class MainActivity extends FragmentActivity {
 		case Settings.EXTERNAL_DIRECTORY:
 
 			if (mViewPager.getCurrentItem() == 0) {
-				mergedExcludedFiles.addAll(settings
-						.getBiggestExternalExcludedHogFiles());
+				mergedExcludedFiles.addAll(settings.getBiggestExternalExcludedHogFiles());
 				strTitle = "Excluded Biggest External Directory Files";
 			} else {
-				mergedExcludedFiles.addAll(settings
-						.getSmallestExternalExcludedHogFiles());
+				mergedExcludedFiles.addAll(settings.getSmallestExternalExcludedHogFiles());
 				strTitle = "Excluded Smallest External Directory Files";
 			}
 			break;
 		case Settings.ROOT_DIRECTORY:
 			if (mViewPager.getCurrentItem() == 0) {
-				mergedExcludedFiles.addAll(settings
-						.getBiggestRootExcludedHogFiles());
+				mergedExcludedFiles.addAll(settings.getBiggestRootExcludedHogFiles());
 				strTitle = "Excluded Biggest Root Directory Files";
 			} else {
-				mergedExcludedFiles.addAll(settings
-						.getSmallestRootExcludedHogFiles());
+				mergedExcludedFiles.addAll(settings.getSmallestRootExcludedHogFiles());
 				strTitle = "Excluded Smallest Root Directory Files";
 			}
 			break;
@@ -415,138 +413,103 @@ public class MainActivity extends FragmentActivity {
 		final boolean[] mSelectedItems = new boolean[mergedExcludedFiles.size()];
 
 		for (int i = 0; i < mergedExcludedFiles.size(); i++) {
-			excludedFiles[i] = mergedExcludedFiles.get(i).getAbsoluteFile()
-					.toString();
+			excludedFiles[i] = mergedExcludedFiles.get(i).getAbsoluteFile().toString();
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(strTitle)
 
-				.setMultiChoiceItems(excludedFiles, null,
-						new DialogInterface.OnMultiChoiceClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which, boolean isChecked) {
-								if (isChecked) {
-									mSelectedItems[which] = true;
-								} else if (mSelectedItems[which] == true) {
-									mSelectedItems[which] = false;
-								}
+		.setMultiChoiceItems(excludedFiles, null, new DialogInterface.OnMultiChoiceClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+				if (isChecked) {
+					mSelectedItems[which] = true;
+				} else if (mSelectedItems[which] == true) {
+					mSelectedItems[which] = false;
+				}
+			}
+		}).setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int id) {
+				boolean shouldRemove = false;
+				for (boolean selectedItem : mSelectedItems) {
+					if (selectedItem) {
+						shouldRemove = true;
+						break;
+					}
+				}
+				if (shouldRemove) {
+					for (int i = mSelectedItems.length - 1; i >= 0; i--)
+						if (mSelectedItems[i] == true)
+							switch (settings.getSelectedSearchDirectory()) {
+							case Settings.EXTERNAL_DIRECTORY:
+								if (mViewPager.getCurrentItem() == 0)
+									settings.getBiggestExternalExcludedHogFiles().remove(i);
+								else
+									settings.getSmallestExternalExcludedHogFiles().remove(i);
+
+								break;
+							case Settings.ROOT_DIRECTORY:
+								if (mViewPager.getCurrentItem() == 0)
+									settings.getBiggestRootExcludedHogFiles().remove(i);
+								else
+									settings.getSmallestRootExcludedHogFiles().remove(i);
+
+								break;
 							}
-						})
-				.setPositiveButton("Remove",
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int id) {
-								boolean shouldRemove = false;
-								for (boolean selectedItem : mSelectedItems) {
-									if (selectedItem) {
-										shouldRemove = true;
-										break;
-									}
-								}
-								if (shouldRemove) {
-									for (int i = mSelectedItems.length - 1; i >= 0; i--)
-										if (mSelectedItems[i] == true)
-											switch (settings
-													.getSelectedSearchDirectory()) {
-											case Settings.EXTERNAL_DIRECTORY:
-												if (mViewPager.getCurrentItem() == 0)
-													settings.getBiggestExternalExcludedHogFiles()
-															.remove(i);
-												else
-													settings.getSmallestExternalExcludedHogFiles()
-															.remove(i);
 
-												break;
-											case Settings.ROOT_DIRECTORY:
-												if (mViewPager.getCurrentItem() == 0)
-													settings.getBiggestRootExcludedHogFiles()
-															.remove(i);
-												else
-													settings.getSmallestRootExcludedHogFiles()
-															.remove(i);
+					// FileIO.writeObject(settings,
+					// Constants.SETTINGS_FILE, path);
 
-												break;
-											}
+					switch (settings.getSelectedSearchDirectory()) {
+					case Settings.EXTERNAL_DIRECTORY:
+						if ((biggestHogFiles.getHogFiles().size()
+								- settings.getBiggestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
+							Log.i(TAG, "Refresh on biggest files");
 
-									// FileIO.writeObject(settings,
-									// Constants.SETTINGS_FILE, path);
+							refresh();
+						} else if ((smallestHogFiles.getHogFiles().size()
+								- settings.getSmallestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
+							Log.i(TAG, "Refresh on smallest files");
 
-									switch (settings
-											.getSelectedSearchDirectory()) {
-									case Settings.EXTERNAL_DIRECTORY:
-										if ((biggestHogFiles.getHogFiles()
-												.size()
-												- settings
-														.getBiggestExternalExcludedHogFiles()
-														.size() < settings
-												.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on biggest files");
+							refresh();
+						} else {
+							Log.i(TAG, "resetListView()");
 
-											refresh();
-										} else if ((smallestHogFiles
-												.getHogFiles().size()
-												- settings
-														.getSmallestExternalExcludedHogFiles()
-														.size() < settings
-												.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on smallest files");
+							for (FileListFragment fileListFragment : fileListFragments)
+								if (fileListFragment != null)
+									fileListFragment.resetListView();
+						}
 
-											refresh();
-										} else {
-											Log.i(TAG, "resetListView()");
+						break;
+					case Settings.ROOT_DIRECTORY:
+						if ((biggestHogFiles.getHogFiles().size() - settings.getBiggestRootExcludedHogFiles().size() < settings
+								.getIntFileCount())) {
+							Log.i(TAG, "Refresh on biggest files");
 
-											for (FileListFragment fileListFragment : fileListFragments)
-												if (fileListFragment != null)
-													fileListFragment
-															.resetListView();
-										}
+							refresh();
+						} else if ((smallestHogFiles.getHogFiles().size()
+								- settings.getSmallestRootExcludedHogFiles().size() < settings.getIntFileCount())) {
+							Log.i(TAG, "Refresh on smallest files");
 
-										break;
-									case Settings.ROOT_DIRECTORY:
-										if ((biggestHogFiles.getHogFiles()
-												.size()
-												- settings
-														.getBiggestRootExcludedHogFiles()
-														.size() < settings
-												.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on biggest files");
-
-											refresh();
-										} else if ((smallestHogFiles
-												.getHogFiles().size()
-												- settings
-														.getSmallestRootExcludedHogFiles()
-														.size() < settings
-												.getIntFileCount())) {
-											Log.i(TAG,
-													"Refresh on smallest files");
-
-											refresh();
-										} else {
-											Log.i(TAG, "resetListView()");
-											for (FileListFragment fileListFragment : fileListFragments)
-												if (fileListFragment != null)
-													fileListFragment
-															.resetListView();
-										}
-										break;
-									}
-								}
-								dialog.dismiss();
-							}
-						})
-				.setNegativeButton(R.string.Cancel,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.cancel();
-							}
-						});
+							refresh();
+						} else {
+							Log.i(TAG, "resetListView()");
+							for (FileListFragment fileListFragment : fileListFragments)
+								if (fileListFragment != null)
+									fileListFragment.resetListView();
+						}
+						break;
+					}
+				}
+				dialog.dismiss();
+			}
+		}).setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int id) {
+				dialog.cancel();
+			}
+		});
 		AlertDialog alertDialog = builder.create();
 		alertDialog.show();
 	}
@@ -565,10 +528,8 @@ public class MainActivity extends FragmentActivity {
 				fileListFragments[i] = new FileListFragment();
 				Bundle args = new Bundle();
 				args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-				args.putSerializable(Constants.HOG_FILES,
-						(i == 1 ? smallestHogFiles : biggestHogFiles));
-				args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false
-						: true));
+				args.putSerializable(Constants.HOG_FILES, (i == 1 ? smallestHogFiles : biggestHogFiles));
+				args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
 				fileListFragments[i].setArguments(args);
 				fileListFragments[i].setRetainInstance(true);
 			}
@@ -604,8 +565,7 @@ public class MainActivity extends FragmentActivity {
 
 	private void checkVersion() {
 		Log.i(TAG, "checkVersion() starting");
-		Double tempVersion = (Double) FileIO.readObject(Constants.VERSION_FILE,
-				path);
+		Double tempVersion = (Double) FileIO.readObject(Constants.VERSION_FILE, path);
 		if (tempVersion == null) {
 			Log.i(TAG, "tempVersion == null");
 			clearApplicationData();
@@ -627,9 +587,7 @@ public class MainActivity extends FragmentActivity {
 			for (String s : children) {
 				if (!s.equals("lib")) {
 					deleteDir(new File(appDir, s));
-					Log.i("TAG",
-							"**************** File /data/data/APP_PACKAGE/" + s
-									+ " DELETED *******************");
+					Log.i("TAG", "**************** File /data/data/APP_PACKAGE/" + s + " DELETED *******************");
 				}
 			}
 		}
@@ -652,16 +610,12 @@ public class MainActivity extends FragmentActivity {
 	private void readHogFiles() {
 		switch (settings.getSelectedSearchDirectory()) {
 		case Settings.EXTERNAL_DIRECTORY:
-			biggestHogFiles = (HogFileList) FileIO.readObject(
-					Constants.BIGGEST_EXTERNAL_HOGFILES, path);
-			smallestHogFiles = (HogFileList) FileIO.readObject(
-					Constants.SMALLEST_EXTERNAL_HOGFILES, path);
+			biggestHogFiles = (HogFileList) FileIO.readObject(Constants.BIGGEST_EXTERNAL_HOGFILES, path);
+			smallestHogFiles = (HogFileList) FileIO.readObject(Constants.SMALLEST_EXTERNAL_HOGFILES, path);
 			break;
 		case Settings.ROOT_DIRECTORY:
-			biggestHogFiles = (HogFileList) FileIO.readObject(
-					Constants.BIGGEST_ROOT_HOGFILES, path);
-			smallestHogFiles = (HogFileList) FileIO.readObject(
-					Constants.SMALLEST_ROOT_HOGFILES, path);
+			biggestHogFiles = (HogFileList) FileIO.readObject(Constants.BIGGEST_ROOT_HOGFILES, path);
+			smallestHogFiles = (HogFileList) FileIO.readObject(Constants.SMALLEST_ROOT_HOGFILES, path);
 			break;
 		default:
 			biggestHogFiles = null;
@@ -671,41 +625,30 @@ public class MainActivity extends FragmentActivity {
 	}
 
 	private AlertDialog.Builder buildReleaseOfLiabilityDialog() {
-		AlertDialog.Builder liabilityBuilder = new AlertDialog.Builder(
-				MainActivity.this);
-		liabilityBuilder
-				.setMessage(R.string.ReleaseOfLiability)
-				.setTitle("FileHog Release of Liability")
-				.setPositiveButton("I agree",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								String strOutput = "User agreed on "
-										+ DateFormat.getDateTimeInstance()
-												.format(new Date());
-								Log.i(TAG, "User agreed on " + strOutput);
+		AlertDialog.Builder liabilityBuilder = new AlertDialog.Builder(MainActivity.this);
+		liabilityBuilder.setMessage(R.string.ReleaseOfLiability).setTitle("FileHog Release of Liability")
+				.setPositiveButton("I agree", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						String strOutput = "User agreed on " + DateFormat.getDateTimeInstance().format(new Date());
+						Log.i(TAG, "User agreed on " + strOutput);
 
-								FileIO.writeObject(strOutput,
-										Constants.RELEASE_OF_LIABILITY_FILE,
-										path);
-								needToRefreshList = settings.isOnOpenRefresh();
-								initalizeAndRefresh();
+						FileIO.writeObject(strOutput, Constants.RELEASE_OF_LIABILITY_FILE, path);
+						needToRefreshList = settings.isOnOpenRefresh();
+						initalizeAndRefresh();
 
-							}
-						})
-				.setNegativeButton("I do not agree",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								releaseOfLiabilityDialog.dismiss();
-								releaseOfLiabilityDialog = null;
-								finish();
-							}
-						});
+					}
+				}).setNegativeButton("I do not agree", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						releaseOfLiabilityDialog.dismiss();
+						releaseOfLiabilityDialog = null;
+						finish();
+					}
+				});
 		return liabilityBuilder;
 	}
 
 	private boolean hogFilesOutOfDate() {
-		return System.currentTimeMillis() - settings.getTimeToDelayRefresh() > smallestHogFiles
-				.getLngCreatedDate();
+		return System.currentTimeMillis() - settings.getTimeToDelayRefresh() > smallestHogFiles.getLngCreatedDate();
 	}
 
 	private void initalizeAndRefresh() {
@@ -720,9 +663,7 @@ public class MainActivity extends FragmentActivity {
 	}
 
 	private void onClick_Settings() {
-		Log.i(TAG,
-				"settings.getResearchFrequency(): "
-						+ settings.getResearchFrequency());
+		Log.i(TAG, "settings.getResearchFrequency(): " + settings.getResearchFrequency());
 		Intent i = new Intent(this, SettingsActivity.class);
 		startActivity(i);
 	}
@@ -745,10 +686,8 @@ public class MainActivity extends FragmentActivity {
 
 		if (biggestHogFiles == null || smallestHogFiles == null) {
 			// First time through the app
-			biggestHogFiles = new HogFileList(new ArrayList<Pair>(),
-					System.currentTimeMillis());
-			smallestHogFiles = new HogFileList(new ArrayList<Pair>(),
-					System.currentTimeMillis());
+			biggestHogFiles = new HogFileList(new ArrayList<Pair>(), System.currentTimeMillis());
+			smallestHogFiles = new HogFileList(new ArrayList<Pair>(), System.currentTimeMillis());
 			needToRefreshList = true;
 		}
 
@@ -772,11 +711,9 @@ public class MainActivity extends FragmentActivity {
 				if (hogFilesOutOfDate() || needToRefreshList) {
 
 					long lngStartTime = System.currentTimeMillis();
-					countFiles(new File(FileIO.getSearchFolder(settings
-							.getSelectedSearchDirectory())));
+					countFiles(new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory())));
 					long lngEndTime = System.currentTimeMillis();
-					Log.i(TAG, "countFiles time: "
-							+ (lngEndTime - lngStartTime) + "ms");
+					Log.i(TAG, "countFiles time: " + (lngEndTime - lngStartTime) + "ms");
 
 					runOnUiThread(new Runnable() {
 						public void run() {
@@ -785,8 +722,7 @@ public class MainActivity extends FragmentActivity {
 
 							progressDialog.setMessage("Please Wait...");
 							progressDialog.setTitle("Searching Files");
-							progressDialog
-									.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+							progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 							progressDialog.setProgress((int) currentFileCount);
 							progressDialog.setMax((int) totalFileCount);
 							progressDialog.setCanceledOnTouchOutside(false);
@@ -795,11 +731,9 @@ public class MainActivity extends FragmentActivity {
 					});
 
 					lngStartTime = System.currentTimeMillis();
-					searchFiles(new File(FileIO.getSearchFolder(settings
-							.getSelectedSearchDirectory())));
+					searchFiles(new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory())));
 					lngEndTime = System.currentTimeMillis();
-					Log.i(TAG, "searchFiles time: "
-							+ (lngEndTime - lngStartTime) + "ms");
+					Log.i(TAG, "searchFiles time: " + (lngEndTime - lngStartTime) + "ms");
 
 					Collections.sort(biggestHogFiles.getHogFiles());
 					Collections.sort(smallestHogFiles.getHogFiles());
@@ -820,16 +754,12 @@ public class MainActivity extends FragmentActivity {
 					Log.i(TAG, "Saving searched files");
 				switch (settings.getSelectedSearchDirectory()) {
 				case Settings.EXTERNAL_DIRECTORY:
-					FileIO.writeObject(biggestHogFiles,
-							Constants.BIGGEST_EXTERNAL_HOGFILES, path);
-					FileIO.writeObject(smallestHogFiles,
-							Constants.SMALLEST_EXTERNAL_HOGFILES, path);
+					FileIO.writeObject(biggestHogFiles, Constants.BIGGEST_EXTERNAL_HOGFILES, path);
+					FileIO.writeObject(smallestHogFiles, Constants.SMALLEST_EXTERNAL_HOGFILES, path);
 					break;
 				case Settings.ROOT_DIRECTORY:
-					FileIO.writeObject(biggestHogFiles,
-							Constants.BIGGEST_ROOT_HOGFILES, path);
-					FileIO.writeObject(smallestHogFiles,
-							Constants.SMALLEST_ROOT_HOGFILES, path);
+					FileIO.writeObject(biggestHogFiles, Constants.BIGGEST_ROOT_HOGFILES, path);
+					FileIO.writeObject(smallestHogFiles, Constants.SMALLEST_ROOT_HOGFILES, path);
 					break;
 				}
 
@@ -839,8 +769,7 @@ public class MainActivity extends FragmentActivity {
 						if (!isTablet(getApplicationContext())) {
 							if (mSectionsPagerAdapter == null) {
 								Log.i(TAG, "mSectionsPagerAdapter == null");
-								mSectionsPagerAdapter = new SectionsPagerAdapter(
-										getSupportFragmentManager());
+								mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 							}
 							// Set up the ViewPager with the sections adapter.
 							if (mViewPager == null) {
@@ -851,12 +780,9 @@ public class MainActivity extends FragmentActivity {
 						}
 
 						for (int i = 0; i < fileListFragments.length; i++) {
-							Log.i(TAG, "fileListFragments[" + i + "] is null: "
-									+ (fileListFragments[i] == null));
+							Log.i(TAG, "fileListFragments[" + i + "] is null: " + (fileListFragments[i] == null));
 							if (fileListFragments[i] != null) {
-								fileListFragments[i]
-										.setHogFiles((i == 1 ? smallestHogFiles
-												: biggestHogFiles));
+								fileListFragments[i].setHogFiles((i == 1 ? smallestHogFiles : biggestHogFiles));
 								fileListFragments[i].resetListView();
 							}
 
@@ -868,8 +794,7 @@ public class MainActivity extends FragmentActivity {
 						} catch (Exception e) {
 							// nothing
 						}
-						getWindow().clearFlags(
-								WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+						getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 					}
 				});
 
@@ -879,8 +804,7 @@ public class MainActivity extends FragmentActivity {
 	}
 
 	private void onClick_About() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(
-				com.houseperez.filehog.MainActivity.this);
+		AlertDialog.Builder builder = new AlertDialog.Builder(com.houseperez.filehog.MainActivity.this);
 		final TextView message = new TextView(MainActivity.this);
 
 		final SpannableString s = new SpannableString("www.houseperez.com");
@@ -890,17 +814,15 @@ public class MainActivity extends FragmentActivity {
 		message.setTextSize(20);
 
 		builder.setTitle("About FileHog v " + Constants.VERSION);
-		builder.setMessage("A product of HousePerez. "
-				+ "For more information, please visit us at: ");
-		builder.setNeutralButton(R.string.Okay,
-				new DialogInterface.OnClickListener() {
+		builder.setMessage("A product of HousePerez. " + "For more information, please visit us at: ");
+		builder.setNeutralButton(R.string.Okay, new DialogInterface.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// Close Dialog
-						dialog.cancel();
-					}
-				});
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// Close Dialog
+				dialog.cancel();
+			}
+		});
 		builder.setView(message);
 		AlertDialog alertDialog = builder.create();
 		alertDialog.show();
@@ -912,20 +834,13 @@ public class MainActivity extends FragmentActivity {
 				for (File f : file.listFiles()) {
 					if (f.isFile()
 							&& ((settings.getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY && !Utility
-									.isInExcludedHogFiles(
-											f,
-											settings.getBiggestExternalExcludedHogFiles()))
+									.isInExcludedHogFiles(f, settings.getBiggestExternalExcludedHogFiles()))
 									|| (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-											.isInExcludedHogFiles(
-													f,
-													settings.getSmallestExternalExcludedHogFiles()))
+											.isInExcludedHogFiles(f, settings.getSmallestExternalExcludedHogFiles()))
 									|| (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-											.isInExcludedHogFiles(
-													f,
-													settings.getBiggestRootExcludedHogFiles())) || (settings
+											.isInExcludedHogFiles(f, settings.getBiggestRootExcludedHogFiles())) || (settings
 									.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-									.isInExcludedHogFiles(f, settings
-											.getSmallestRootExcludedHogFiles())))) {
+									.isInExcludedHogFiles(f, settings.getSmallestRootExcludedHogFiles())))) {
 						totalFileCount++;
 						if (totalFileCount % 500 == 0)
 							if (Constants.debugOn)
@@ -933,8 +848,7 @@ public class MainActivity extends FragmentActivity {
 
 					} else {
 						// Recurse directories
-						if (f != null && f.exists() && f.canRead()
-								&& !f.isHidden())
+						if (f != null && f.exists() && f.canRead() && !f.isHidden())
 							countFiles(f);
 					}
 				}
@@ -947,58 +861,39 @@ public class MainActivity extends FragmentActivity {
 				for (File f : file.listFiles()) {
 					if (f.isFile()
 							&& ((settings.getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY && !Utility
-									.isInExcludedHogFiles(
-											f,
-											settings.getBiggestExternalExcludedHogFiles()))
+									.isInExcludedHogFiles(f, settings.getBiggestExternalExcludedHogFiles()))
 									|| (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-											.isInExcludedHogFiles(
-													f,
-													settings.getSmallestExternalExcludedHogFiles()))
+											.isInExcludedHogFiles(f, settings.getSmallestExternalExcludedHogFiles()))
 									|| (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-											.isInExcludedHogFiles(
-													f,
-													settings.getBiggestRootExcludedHogFiles())) || (settings
+											.isInExcludedHogFiles(f, settings.getBiggestRootExcludedHogFiles())) || (settings
 									.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-									.isInExcludedHogFiles(f, settings
-											.getSmallestRootExcludedHogFiles())))) {
+									.isInExcludedHogFiles(f, settings.getSmallestRootExcludedHogFiles())))) {
 
 						currentFileCount++;
 						progressDialog.setProgress((int) currentFileCount);
 
 						if (biggestHogFiles.getHogFiles().size() < Constants.MAX_FILE_COUNT) {
-							biggestHogFiles.getHogFiles().add(
-									new Pair(Double.valueOf(f.length()), f));
+							biggestHogFiles.getHogFiles().add(new Pair(Double.valueOf(f.length()), f));
 						} else {
 							for (Pair pair : biggestHogFiles.getHogFiles()) {
 								if (f.length() > pair.getSize()) {
-									biggestHogFiles.getHogFiles().add(
-											new Pair(
-													Double.valueOf(f.length()),
-													f));
+									biggestHogFiles.getHogFiles().add(new Pair(Double.valueOf(f.length()), f));
 
-									Collections.sort(biggestHogFiles
-											.getHogFiles());
-									biggestHogFiles.getHogFiles().remove(
-											biggestHogFiles.getHogFiles()
-													.size() - 1);
+									Collections.sort(biggestHogFiles.getHogFiles());
+									biggestHogFiles.getHogFiles().remove(biggestHogFiles.getHogFiles().size() - 1);
 									break;
 								}
 							}
 						}
 
 						if (smallestHogFiles.getHogFiles().size() < Constants.MAX_FILE_COUNT) {
-							smallestHogFiles.getHogFiles().add(
-									new Pair(Double.valueOf(f.length()), f));
+							smallestHogFiles.getHogFiles().add(new Pair(Double.valueOf(f.length()), f));
 						} else {
 							for (Pair pair : smallestHogFiles.getHogFiles()) {
 								if (f.length() < pair.getSize()) {
-									smallestHogFiles.getHogFiles().add(
-											new Pair(
-													Double.valueOf(f.length()),
-													f));
+									smallestHogFiles.getHogFiles().add(new Pair(Double.valueOf(f.length()), f));
 
-									Collections.sort(smallestHogFiles
-											.getHogFiles());
+									Collections.sort(smallestHogFiles.getHogFiles());
 									smallestHogFiles.getHogFiles().remove(0);
 									break;
 								}
@@ -1009,8 +904,7 @@ public class MainActivity extends FragmentActivity {
 
 					else {
 						// Recurse directories
-						if (f != null && f.exists() && f.canRead()
-								&& !f.isHidden())
+						if (f != null && f.exists() && f.canRead() && !f.isHidden())
 							searchFiles(f);
 					}
 				}

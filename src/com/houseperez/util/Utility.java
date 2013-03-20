@@ -3,6 +3,7 @@ package com.houseperez.util;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import android.util.Log;
@@ -16,12 +17,17 @@ public class Utility {
 	private static final double MEGABYTES = KILOBYTES * KILOBYTES;
 	private static final double GIGABYTES = MEGABYTES * KILOBYTES;
 
-	public static double roundTwoDecimals(double d) {
+	private static String roundTwoDecimals(double d) {
 		DecimalFormat twoDForm = new DecimalFormat("#.##");
 		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 		dfs.setDecimalSeparator('.');
 		twoDForm.setDecimalFormatSymbols(dfs);
-		return Double.valueOf(twoDForm.format(d));
+		try {
+			return twoDForm.parse(twoDForm.format(d)).toString();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	public static String getCorrectByteSize(double size) {

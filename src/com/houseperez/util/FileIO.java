@@ -18,14 +18,16 @@ package com.houseperez.util;
  * 
  * Read and write internally
  * Objectized reading and writing for more generic usage
+ * 
+ * Revision v 3.06
+ * 
+ * Edited read and write file to close the streams
  */
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -38,24 +40,6 @@ public class FileIO {
 
 	private static final String TAG = "FileIO";
 
-	public static void writeFile(String strOutput, String strFile) {
-		File root = Environment.getExternalStorageDirectory();
-		File file = new File(root, strFile);
-		if (strOutput.length() > 0) {
-			try {
-				if (root.canWrite()) {
-					FileWriter filewriter = new FileWriter(file);
-					BufferedWriter out = new BufferedWriter(filewriter);
-					out.write(strOutput);
-					out.close();
-				}
-			} catch (IOException e) {
-				Log.e(TAG, "Could not write file " + e.getMessage());
-			}
-
-		}
-	}
-
 	public static String getSearchFolder(int selectedSearchDirectory) {
 		if (selectedSearchDirectory == Settings.ROOT_DIRECTORY)
 			return Environment.getRootDirectory().getAbsolutePath();
@@ -64,33 +48,56 @@ public class FileIO {
 	}
 
 	public static void writeObject(Object obj, String strFile, File path) {
+		Log.i(TAG, "Writing new " + strFile);
+		path.mkdirs(); // create folders where write files
+		File filePath = new File(path, strFile);
+		FileOutputStream fout = null;
+		ObjectOutputStream oos = null;
 		try {
-			Log.i(TAG, "Writing new " + strFile);
-			path.mkdirs(); //create folders where write files
-			File filePath = new File(path, strFile);
-			FileOutputStream fout = new FileOutputStream(filePath);
-			ObjectOutputStream oos = new ObjectOutputStream(fout);
+			fout = new FileOutputStream(filePath);
+			oos = new ObjectOutputStream(fout);
 			oos.writeObject(obj);
-			oos.close();
 		} catch (Exception e) {
 			Log.w(TAG, "Could not write file " + e.getMessage());
+		} finally {
+			try {
+				if (fout != null)
+					fout.close();
+				if (oos != null)
+					oos.close();
+				fout = null;
+				oos = null;
+			} catch (IOException e) {
+				Log.e(TAG, "Could not close output stream " + e.getMessage());
+			}
 		}
 	}
 
 	public static Object readObject(String strFile, File path) {
 		Object obj = null;
+		Log.i(TAG, "Reading " + strFile);
+		File filePath = new File(path, strFile);
+		FileInputStream fin = null;
+		ObjectInputStream ois = null;
 		try {
-			Log.i(TAG, "Reading " + strFile);
-			File filePath = new File(path, strFile);
-			FileInputStream fin = new FileInputStream(filePath);
-			ObjectInputStream ois = new ObjectInputStream(fin);
+			fin = new FileInputStream(filePath);
+			ois = new ObjectInputStream(fin);
 			obj = ois.readObject();
-			ois.close();
-
 		} catch (FileNotFoundException e) {
 			Log.w(TAG, "Could not find " + strFile);
 		} catch (Exception e) {
 			Log.e(TAG, "Could not read " + strFile);
+		} finally {
+			try {
+				if (fin != null)
+					fin.close();
+				if (ois != null)
+					ois.close();
+				fin = null;
+				ois = null;
+			} catch (IOException e) {
+				Log.e(TAG, "Could not close input stream " + e.getMessage());
+			}
 		}
 		return obj;
 	}
