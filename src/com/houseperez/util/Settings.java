@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import com.houseperez.filehog.MainActivity;
+import com.houseperez.filehog.activity.MainActivity;
 
 import android.os.Parcel;
 import android.os.Parcelable;

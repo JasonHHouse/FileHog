@@ -1,5 +1,6 @@
-package com.houseperez.filehog;
+package com.houseperez.filehog.activity;
 
+import com.houseperez.filehog.R;
 import com.houseperez.util.Constants;
 import com.houseperez.util.Settings;
 

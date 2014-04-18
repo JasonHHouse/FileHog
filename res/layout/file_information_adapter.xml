@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name"
+        android:id="@+id/txtNameLabel"
+        android:background="#0099CC"
+        android:textColor="#FFFFFF"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/txtSizeLabel" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/txtName"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/txtNameLabel" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Size"
+        android:background="#0099CC"
+        android:textColor="#FFFFFF"
+        android:id="@+id/txtSizeLabel"
+        android:layout_alignTop="@+id/txtSize"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/txtLastModifiedLabel" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/txtSize"
+        android:layout_below="@+id/txtName"
+        android:layout_toRightOf="@+id/txtNameLabel" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/txtLastModified"
+        android:layout_alignTop="@+id/txtLastModifiedLabel"
+        android:layout_toRightOf="@+id/txtLastModifiedLabel" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Last Modified"
+        android:background="#0099CC"
+        android:textColor="#FFFFFF"
+        android:id="@+id/txtLastModifiedLabel"
+        android:layout_below="@+id/txtSize"
+        android:layout_alignParentLeft="true" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/txtFolder"
+        android:layout_alignTop="@+id/txtFolderLabel"
+        android:layout_toRightOf="@+id/txtFolderLabel" />
+
+    <TextView
+        android:padding="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Folder"
+        android:background="#0099CC"
+        android:textColor="#FFFFFF"
+        android:id="@+id/txtFolderLabel"
+        android:layout_below="@+id/txtLastModifiedLabel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/txtLastModifiedLabel" />
+</RelativeLayout>

@@ -1,4 +1,4 @@
-package com.houseperez.filehog;
+package com.houseperez.filehog.activity;
 
 public class Resources {
 
