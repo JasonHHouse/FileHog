@@ -184,7 +184,10 @@
  * Split the folder and file name up in the list view
  * Switched excluded files and refresh to icon
  * Created listview item layout for better information presentation
- * 
+ *
+ * Revision 4.01
+ *
+ * Updated listview items look and feel
  */
 
 package com.houseperez.filehog.activity;
