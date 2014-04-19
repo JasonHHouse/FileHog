@@ -208,7 +208,15 @@
  * Added more padding to file information labels and file information
  * Right justified the file information labels
  *
+ * Revision 4.05
  *
+ * Added releaseOfLiabilityDialog back in
+ * Removed size label, moves size value to bottom right
+ * Updated releaseOfLiabilityDialog layout
+ * Made releaseOfLiabilityDialog not cancelable so users must click it to use the app
+ * Updated title and buttons of releaseOfLiabilityDialog
+ * Fixed dialog not showing when home button is pressed then reopening the app
+ * Refresh now shows a circular loading bar when pressed
  *
  */
 
@@ -231,6 +239,7 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.houseperez.filehog.R;
@@ -279,18 +288,24 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
         needToRefreshList = false;
 
-        /*if (FileIO.readObject(Constants.RELEASE_OF_LIABILITY_FILE, path) == null) {
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (FileIO.readObject(Constants.RELEASE_OF_LIABILITY_FILE, path) == null) {
             releaseOfLiabilityDialog = buildReleaseOfLiabilityDialog().create();
             releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
             releaseOfLiabilityDialog.show();
-        } else {*/
+        } else {
 
-        needToRefreshList = settings.isOnOpenRefresh();
-        settings.setOnOpenRefresh(false);
-        // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
+            needToRefreshList = settings.isOnOpenRefresh();
+            settings.setOnOpenRefresh(false);
+            // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 
-        initalizeAndRefresh();
-        //}
+            initalizeAndRefresh();
+        }
     }
 
     @Override
@@ -343,6 +358,13 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 return true;
             case R.id.Refresh:
                 needToRefreshList = true;
+
+                fileListFragments[0].updateAdapter(new ArrayList<FileInformation>());
+                fileListFragments[1].updateAdapter(new ArrayList<FileInformation>());
+
+                fileListFragments[0].setListShown(false);
+                fileListFragments[1].setListShown(false);
+
                 refresh();
                 return true;
             default:
@@ -504,8 +526,12 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     public void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles) {
         this.biggestHogFiles = biggestHogFiles;
         this.smallestHogFiles = smallestHogFiles;
+
         fileListFragments[0].updateAdapter(biggestHogFiles);
         fileListFragments[1].updateAdapter(smallestHogFiles);
+
+        fileListFragments[0].setListShown(true);
+        fileListFragments[1].setListShown(true);
     }
 
     /**
@@ -615,19 +641,24 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     }
 
     private AlertDialog.Builder buildReleaseOfLiabilityDialog() {
+        View view = getLayoutInflater().inflate(R.layout.release_of_liability_dialog, null);
+
         AlertDialog.Builder liabilityBuilder = new AlertDialog.Builder(this);
-        liabilityBuilder.setMessage(R.string.ReleaseOfLiability).setTitle("FileHog Release of Liability")
-                .setPositiveButton("I agree", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        String strOutput = "User agreed on " + DateFormat.getDateTimeInstance().format(new Date());
-                        Log.i(TAG, "User agreed on " + strOutput);
+        liabilityBuilder.setTitle("Release of Liability");
+        liabilityBuilder.setView(view);
+        liabilityBuilder.setCancelable(false);
+        liabilityBuilder.setPositiveButton("I agree", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String strOutput = "User agreed on " + DateFormat.getDateTimeInstance().format(new Date());
+                Log.i(TAG, "User agreed on " + strOutput);
 
-                        FileIO.writeObject(strOutput, Constants.RELEASE_OF_LIABILITY_FILE, path);
-                        needToRefreshList = settings.isOnOpenRefresh();
-                        initalizeAndRefresh();
+                FileIO.writeObject(strOutput, Constants.RELEASE_OF_LIABILITY_FILE, path);
+                needToRefreshList = settings.isOnOpenRefresh();
+                initalizeAndRefresh();
 
-                    }
-                }).setNegativeButton("I do not agree", new DialogInterface.OnClickListener() {
+            }
+        });
+        liabilityBuilder.setNegativeButton("I don't agree", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 releaseOfLiabilityDialog.dismiss();
                 releaseOfLiabilityDialog = null;

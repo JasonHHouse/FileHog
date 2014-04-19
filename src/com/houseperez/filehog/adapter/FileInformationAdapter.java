@@ -23,7 +23,7 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
     private List<FileInformation> fileInformations;
 
     private TextView txtNameLabel;
-    private TextView txtSizeLabel;
+    //private TextView txtSizeLabel;
     private TextView txtLastModifiedLabel;
     private TextView txtFolderLabel;
 
@@ -66,16 +66,6 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
             convertView = inflater.inflate(R.layout.file_information_adapter, parent, false);
         }
 
-        txtNameLabel = (TextView) convertView.findViewById(R.id.txtNameLabel);
-        txtSizeLabel = (TextView) convertView.findViewById(R.id.txtSizeLabel);
-        txtLastModifiedLabel = (TextView) convertView.findViewById(R.id.txtLastModifiedLabel);
-        txtFolderLabel = (TextView) convertView.findViewById(R.id.txtFolderLabel);
-
-        txtName = (TextView) convertView.findViewById(R.id.txtName);
-        txtSize = (TextView) convertView.findViewById(R.id.txtSize);
-        txtLastModified = (TextView) convertView.findViewById(R.id.txtLastModified);
-        txtFolder = (TextView) convertView.findViewById(R.id.txtFolder);
-
         int lightBlue = Color.parseColor("#1B89CC");
         int darkBlue = getContext().getResources().getColor(R.color.darkBlue);
 
@@ -83,6 +73,18 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
         int orange = Color.parseColor("#FF6248");
         int red = Color.parseColor("#CC1B1E");
         int white = Color.WHITE;
+
+        convertView.setBackgroundColor(white);
+
+        txtNameLabel = (TextView) convertView.findViewById(R.id.txtNameLabel);
+        //txtSizeLabel = (TextView) convertView.findViewById(R.id.txtSizeLabel);
+        txtLastModifiedLabel = (TextView) convertView.findViewById(R.id.txtLastModifiedLabel);
+        txtFolderLabel = (TextView) convertView.findViewById(R.id.txtFolderLabel);
+
+        txtName = (TextView) convertView.findViewById(R.id.txtName);
+        txtSize = (TextView) convertView.findViewById(R.id.txtSize);
+        txtLastModified = (TextView) convertView.findViewById(R.id.txtLastModified);
+        txtFolder = (TextView) convertView.findViewById(R.id.txtFolder);
 
         if (position % 2 == 0) {
             setBackgroundColor(darkBlue, white);
@@ -112,7 +114,7 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
 
     private void setBackgroundColor(int labelColor, int valueColor) {
         txtNameLabel.setBackgroundColor(labelColor);
-        txtSizeLabel.setBackgroundColor(labelColor);
+        //txtSizeLabel.setBackgroundColor(labelColor);
         txtLastModifiedLabel.setBackgroundColor(labelColor);
         txtFolderLabel.setBackgroundColor(labelColor);
 
@@ -124,7 +126,7 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
 
     private void setTextColor(int labelColor, int valueColor) {
         txtNameLabel.setTextColor(labelColor);
-        txtSizeLabel.setTextColor(labelColor);
+        //txtSizeLabel.setTextColor(labelColor);
         txtLastModifiedLabel.setTextColor(labelColor);
         txtFolderLabel.setTextColor(labelColor);
 
