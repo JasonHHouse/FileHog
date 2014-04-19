@@ -77,7 +77,8 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
         txtFolder = (TextView) convertView.findViewById(R.id.txtFolder);
 
         int lightBlue = Color.parseColor("#1B89CC");
-        int darkBlue = Color.parseColor("#427899");
+        int darkBlue = getContext().getResources().getColor(R.color.darkBlue);
+
         int aqua = Color.parseColor("#08FFD8");
         int orange = Color.parseColor("#FF6248");
         int red = Color.parseColor("#CC1B1E");

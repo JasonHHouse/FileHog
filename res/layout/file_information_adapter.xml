@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="2dp"
+        android:paddingTop="2dp"
+        android:paddingRight="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Name"
+        android:gravity="right"
         android:id="@+id/txtNameLabel"
         android:layout_alignBottom="@+id/txtName"
         android:layout_alignParentTop="true"
@@ -15,7 +20,10 @@
         android:layout_alignRight="@+id/txtSizeLabel" />
 
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="4dp"
+        android:paddingTop="2dp"
+        android:paddingRight="2dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
@@ -24,10 +32,14 @@
         android:layout_toRightOf="@+id/txtNameLabel" />
 
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="2dp"
+        android:paddingTop="2dp"
+        android:paddingRight="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Size"
+        android:gravity="right"
         android:id="@+id/txtSizeLabel"
         android:layout_alignBottom="@+id/txtSize"
         android:layout_alignTop="@+id/txtSize"
@@ -35,7 +47,10 @@
         android:layout_alignRight="@+id/txtLastModifiedLabel" />
 
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="4dp"
+        android:paddingTop="2dp"
+        android:paddingRight="2dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
@@ -44,16 +59,24 @@
         android:layout_toRightOf="@+id/txtNameLabel" />
 
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="2dp"
+        android:paddingTop="2dp"
+        android:paddingRight="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Last Modified"
+        android:gravity="right"
         android:id="@+id/txtLastModifiedLabel"
         android:layout_alignBottom="@+id/txtLastModified"
         android:layout_alignTop="@+id/txtLastModified"
         android:layout_alignParentLeft="true" />
+
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="4dp"
+        android:paddingTop="2dp"
+        android:paddingRight="2dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
@@ -62,17 +85,25 @@
         android:layout_toRightOf="@+id/txtSizeLabel" />
 
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="2dp"
+        android:paddingTop="2dp"
+        android:paddingRight="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Folder"
+        android:gravity="right"
         android:id="@+id/txtFolderLabel"
         android:layout_alignBottom="@+id/txtFolder"
         android:layout_alignTop="@+id/txtFolder"
         android:layout_alignParentLeft="true"
         android:layout_alignRight="@+id/txtLastModifiedLabel" />
+
     <TextView
-        android:padding="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="4dp"
+        android:paddingTop="2dp"
+        android:paddingRight="2dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""

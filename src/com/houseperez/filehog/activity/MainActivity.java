@@ -199,7 +199,17 @@
  *
  * Speed up the file searching
  * Fixed files not showing up
- * 
+ *
+ * Revision 4.04
+ *
+ * Speed up the file searching more
+ * Cut down on file searching memory usage
+ * Changed action bar text color to apps darkBlue
+ * Added more padding to file information labels and file information
+ * Right justified the file information labels
+ *
+ *
+ *
  */
 
 package com.houseperez.filehog.activity;
@@ -233,14 +243,15 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends FragmentActivity implements FileListFragment.TaskCallbacks {
 
     public static final String TAG = MainActivity.class.getName();
 
     // Globals
-    private ArrayList<FileInformation> biggestHogFiles;
-    private ArrayList<FileInformation> smallestHogFiles;
+    private List<FileInformation> biggestHogFiles;
+    private List<FileInformation> smallestHogFiles;
     private AlertDialog releaseOfLiabilityDialog;
     private Settings settings;
     private boolean needToRefreshList;
@@ -332,7 +343,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 return true;
             case R.id.Refresh:
                 needToRefreshList = true;
-                //refresh();
+                refresh();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -430,12 +441,12 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                                     - settings.getBiggestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
                                 Log.i(TAG, "Refresh on biggest files");
 
-                                //refresh();
+                                refresh();
                             } else if ((smallestHogFiles.size()
                                     - settings.getSmallestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
                                 Log.i(TAG, "Refresh on smallest files");
 
-                                //refresh();
+                                refresh();
                             } else {
                                 Log.i(TAG, "startFileSearch()");
 
@@ -450,12 +461,12 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                                     .getIntFileCount())) {
                                 Log.i(TAG, "Refresh on biggest files");
 
-                                //refresh();
+                                refresh();
                             } else if ((smallestHogFiles.size()
                                     - settings.getSmallestRootExcludedHogFiles().size() < settings.getIntFileCount())) {
                                 Log.i(TAG, "Refresh on smallest files");
 
-                                //refresh();
+                                refresh();
                             } else {
                                 Log.i(TAG, "startFileSearch()");
                                 for (FileListFragment fileListFragment : fileListFragments)
@@ -490,7 +501,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     }
 
     @Override
-    public void onPostExecute(ArrayList<FileInformation> biggestHogFiles, ArrayList<FileInformation> smallestHogFiles) {
+    public void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles) {
         this.biggestHogFiles = biggestHogFiles;
         this.smallestHogFiles = smallestHogFiles;
         fileListFragments[0].updateAdapter(biggestHogFiles);
@@ -511,7 +522,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 fileListFragments[i] = new FileListFragment();
                 Bundle args = new Bundle();
                 args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-                args.putSerializable(Constants.HOG_FILES, (i == 1 ? smallestHogFiles : biggestHogFiles));
                 args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
                 fileListFragments[i].setArguments(args);
                 fileListFragments[i].setRetainInstance(true);
@@ -638,7 +648,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             fileListFragments[i] = new FileListFragment();
             Bundle args = new Bundle();
             args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-            args.putSerializable(Constants.HOG_FILES, (i == 1 ? smallestHogFiles : biggestHogFiles));
             args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
             fileListFragments[i].setArguments(args);
             fileListFragments[i].setRetainInstance(true);
@@ -656,6 +665,10 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             mViewPager.setAdapter(mSectionsPagerAdapter);
         }
 
+        refresh();
+    }
+
+    private void refresh() {
         fileListFragments[0].startFileSearch(this);
     }
 

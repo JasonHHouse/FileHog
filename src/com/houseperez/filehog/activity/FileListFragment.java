@@ -21,7 +21,7 @@ import com.houseperez.util.FileInformation;
 import com.houseperez.util.Settings;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
 public class FileListFragment extends ListFragment {
 
@@ -30,7 +30,7 @@ public class FileListFragment extends ListFragment {
 
     // Globals
     private FileInformationAdapter fileInformationAdapter;
-    private ArrayList<FileInformation> hogFiles;
+    private List<FileInformation> hogFiles;
     private File clickedFile;
     private boolean isBiggestFiles;
     private Settings settings;
@@ -80,7 +80,7 @@ public class FileListFragment extends ListFragment {
 
     }
 
-    public void updateAdapter(ArrayList<FileInformation> hogFiles) {
+    public void updateAdapter(List<FileInformation> hogFiles) {
         this.hogFiles = hogFiles;
         if (fileInformationAdapter == null) {
             fileInformationAdapter = new FileInformationAdapter(getActivity(), android.R.layout.simple_list_item_1, hogFiles);
@@ -416,7 +416,7 @@ public class FileListFragment extends ListFragment {
 
         void onCancelled();
 
-        void onPostExecute(ArrayList<FileInformation> biggestHogFiles, ArrayList<FileInformation> smallestHogFiles);
+        void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles);
     }
 
 }
