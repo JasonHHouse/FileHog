@@ -188,6 +188,12 @@
  * Revision 4.01
  *
  * Updated listview items look and feel
+ *
+ * Revision 4.02
+ *
+ * Changed from using runnable to use async task for searching for files
+ * Removed counting dialog
+ * Removed searching dialog
  */
 
 package com.houseperez.filehog.activity;
@@ -208,10 +214,8 @@ import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.houseperez.filehog.R;
@@ -219,37 +223,26 @@ import com.houseperez.util.Constants;
 import com.houseperez.util.FileIO;
 import com.houseperez.util.FileInformation;
 import com.houseperez.util.Settings;
-import com.houseperez.util.Utility;
 
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements FileListFragment.TaskCallbacks {
 
-    public static final String TAG = "MainActivity";
+    public static final String TAG = MainActivity.class.getName();
 
     // Globals
     private ArrayList<FileInformation> biggestHogFiles;
     private ArrayList<FileInformation> smallestHogFiles;
-    private long totalFileCount;
-    private ProgressDialog progressDialog;
-    private AlertDialog countingFilesDialog;
     private AlertDialog releaseOfLiabilityDialog;
-    private boolean threadRunning;
-    private long currentFileCount;
     private Settings settings;
     private boolean needToRefreshList;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private FileListFragment[] fileListFragments;
     private static File path;
-
-    public void terminate() {
-        threadRunning = false;
-    }
 
     public static File getFilePath() {
         return path;
@@ -266,58 +259,29 @@ public class MainActivity extends FragmentActivity {
         checkVersion();
 
         fileListFragments = new FileListFragment[2];
-
-        WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        Display mDisplay = mWindowManager.getDefaultDisplay();
-        int intRotation = mDisplay.getRotation();
-        Log.i(TAG, "getRotation(): " + intRotation);
-        settings = Settings.getInstance(intRotation);
+        settings = Settings.getInstance();
 
         needToRefreshList = false;
 
-        if (FileIO.readObject(Constants.RELEASE_OF_LIABILITY_FILE, path) == null) {
+        /*if (FileIO.readObject(Constants.RELEASE_OF_LIABILITY_FILE, path) == null) {
             releaseOfLiabilityDialog = buildReleaseOfLiabilityDialog().create();
             releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
             releaseOfLiabilityDialog.show();
-        } else {
-            Log.i(TAG, "settings.getIntRotation() == intRotation: " + (settings.getIntRotation() == intRotation));
-            if (settings.getIntRotation() != intRotation)
-                settings.setIntRotation(intRotation);
+        } else {*/
 
             needToRefreshList = settings.isOnOpenRefresh();
             settings.setOnOpenRefresh(false);
             // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 
-            for (int i = 0; i < 2; i++) {
-                fileListFragments[i] = new FileListFragment();
-                Bundle args = new Bundle();
-                args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-                args.putSerializable(Constants.HOG_FILES, (i == 1 ? smallestHogFiles : biggestHogFiles));
-                args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
-                fileListFragments[i].setArguments(args);
-                fileListFragments[i].setRetainInstance(true);
-            }
-
             initalizeAndRefresh();
-        }
+        //}
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.i(TAG, "onPause()");
-        terminate();
 
-        if (countingFilesDialog != null) {
-            if (countingFilesDialog.isShowing())
-                settings.setOnOpenRefresh(true);
-            countingFilesDialog.dismiss();
-        }
-        if (progressDialog != null) {
-            if (progressDialog.isShowing())
-                settings.setOnOpenRefresh(true);
-            progressDialog.dismiss();
-        }
         if (releaseOfLiabilityDialog != null)
             releaseOfLiabilityDialog.dismiss();
 
@@ -344,7 +308,6 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.mainactivity_menu, menu);
         return true;
     }
@@ -364,7 +327,7 @@ public class MainActivity extends FragmentActivity {
                 return true;
             case R.id.Refresh:
                 needToRefreshList = true;
-                refresh();
+                //refresh();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -462,18 +425,18 @@ public class MainActivity extends FragmentActivity {
                                     - settings.getBiggestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
                                 Log.i(TAG, "Refresh on biggest files");
 
-                                refresh();
+                                //refresh();
                             } else if ((smallestHogFiles.size()
                                     - settings.getSmallestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
                                 Log.i(TAG, "Refresh on smallest files");
 
-                                refresh();
+                                //refresh();
                             } else {
-                                Log.i(TAG, "resetListView()");
+                                Log.i(TAG, "startFileSearch()");
 
                                 for (FileListFragment fileListFragment : fileListFragments)
                                     if (fileListFragment != null)
-                                        fileListFragment.resetListView();
+                                        fileListFragment.startFileSearch();
                             }
 
                             break;
@@ -482,17 +445,17 @@ public class MainActivity extends FragmentActivity {
                                     .getIntFileCount())) {
                                 Log.i(TAG, "Refresh on biggest files");
 
-                                refresh();
+                                //refresh();
                             } else if ((smallestHogFiles.size()
                                     - settings.getSmallestRootExcludedHogFiles().size() < settings.getIntFileCount())) {
                                 Log.i(TAG, "Refresh on smallest files");
 
-                                refresh();
+                                //refresh();
                             } else {
-                                Log.i(TAG, "resetListView()");
+                                Log.i(TAG, "startFileSearch()");
                                 for (FileListFragment fileListFragment : fileListFragments)
                                     if (fileListFragment != null)
-                                        fileListFragment.resetListView();
+                                        fileListFragment.startFileSearch();
                             }
                             break;
                     }
@@ -507,6 +470,26 @@ public class MainActivity extends FragmentActivity {
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    @Override
+    public void onPreExecute() {
+    }
+
+    @Override
+    public void onProgressUpdate(int percent) {
+    }
+
+    @Override
+    public void onCancelled() {
+    }
+
+    @Override
+    public void onPostExecute(ArrayList<FileInformation> biggestHogFiles, ArrayList<FileInformation> smallestHogFiles) {
+        this.biggestHogFiles = biggestHogFiles;
+        this.smallestHogFiles = smallestHogFiles;
+        fileListFragments[0].updateAdapter(biggestHogFiles);
+        fileListFragments[1].updateAdapter(smallestHogFiles);
     }
 
     /**
@@ -541,7 +524,6 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
             return 2;
         }
 
@@ -571,7 +553,6 @@ public class MainActivity extends FragmentActivity {
         } else {
             Log.i(TAG, "tempVersion == VERSION");
         }
-
     }
 
     public void clearApplicationData() {
@@ -616,11 +597,10 @@ public class MainActivity extends FragmentActivity {
                 biggestHogFiles = null;
                 smallestHogFiles = null;
         }
-
     }
 
     private AlertDialog.Builder buildReleaseOfLiabilityDialog() {
-        AlertDialog.Builder liabilityBuilder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder liabilityBuilder = new AlertDialog.Builder(this);
         liabilityBuilder.setMessage(R.string.ReleaseOfLiability).setTitle("FileHog Release of Liability")
                 .setPositiveButton("I agree", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -649,155 +629,34 @@ public class MainActivity extends FragmentActivity {
     }
 
     private void initalizeAndRefresh() {
-        if (Constants.debugOn)
-            Log.i(TAG, "initalizeAndRefresh()");
-        threadRunning = true;
+        for (int i = 0; i < 2; i++) {
+            fileListFragments[i] = new FileListFragment();
+            Bundle args = new Bundle();
+            args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
+            args.putSerializable(Constants.HOG_FILES, (i == 1 ? smallestHogFiles : biggestHogFiles));
+            args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
+            fileListFragments[i].setArguments(args);
+            fileListFragments[i].setRetainInstance(true);
+        }
 
-        currentFileCount = 0;
-        totalFileCount = 0;
+        if (mSectionsPagerAdapter == null) {
+            Log.i(TAG, "mSectionsPagerAdapter == null");
+            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        }
 
-        refresh();
+        // Set up the ViewPager with the sections adapter.
+        if (mViewPager == null) {
+            Log.i(TAG, "mViewPager == null");
+            mViewPager = (ViewPager) findViewById(R.id.pager);
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+        }
+
     }
 
     private void onClick_Settings() {
         Log.i(TAG, "settings.getResearchFrequency(): " + settings.getResearchFrequency());
         Intent i = new Intent(this, SettingsActivity.class);
         startActivity(i);
-    }
-
-    public void refresh() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        // listView.setEnabled(false);
-        // listView.setAdapter(null);
-        for (FileListFragment fileListFragment : fileListFragments) {
-            if (fileListFragment != null) {
-                if (fileListFragment.isAdded()) {
-                    fileListFragment.getListView().setEnabled(false);
-                    fileListFragment.getListView().setAdapter(null);
-                }
-            }
-        }
-
-        readHogFiles();
-
-        if (biggestHogFiles == null || smallestHogFiles == null) {
-            // First time through the app
-            biggestHogFiles = new ArrayList<FileInformation>();
-            smallestHogFiles = new ArrayList<FileInformation>();
-            needToRefreshList = true;
-        }
-
-        totalFileCount = 0;
-        currentFileCount = 0;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setMessage("Please Wait...");
-        builder.setTitle("Counting Files");
-
-        countingFilesDialog = builder.create();
-        countingFilesDialog.setCanceledOnTouchOutside(false);
-        countingFilesDialog.show();
-
-        progressDialog = new ProgressDialog(MainActivity.this);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                if (hogFilesOutOfDate() || needToRefreshList) {
-
-                    long lngStartTime = System.currentTimeMillis();
-                    countFiles(new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory())));
-                    long lngEndTime = System.currentTimeMillis();
-                    Log.i(TAG, "countFiles time: " + (lngEndTime - lngStartTime) + "ms");
-
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            countingFilesDialog.hide();
-                            countingFilesDialog.dismiss();
-
-                            progressDialog.setMessage("Please Wait...");
-                            progressDialog.setTitle("Searching Files");
-                            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                            progressDialog.setProgress((int) currentFileCount);
-                            progressDialog.setMax((int) totalFileCount);
-                            progressDialog.setCanceledOnTouchOutside(false);
-                            progressDialog.show();
-                        }
-                    });
-
-                    lngStartTime = System.currentTimeMillis();
-                    searchFiles(new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory())));
-                    lngEndTime = System.currentTimeMillis();
-                    Log.i(TAG, "searchFiles time: " + (lngEndTime - lngStartTime) + "ms");
-
-                    Collections.sort(biggestHogFiles);
-                    Collections.sort(smallestHogFiles);
-                    if (Constants.debugOn)
-                        Log.i(TAG, "Finished searching files");
-
-                    needToRefreshList = false;
-                } else {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            countingFilesDialog.hide();
-                            countingFilesDialog.dismiss();
-                        }
-                    });
-                }
-
-                if (Constants.debugOn)
-                    Log.i(TAG, "Saving searched files");
-                switch (settings.getSelectedSearchDirectory()) {
-                    case Settings.EXTERNAL_DIRECTORY:
-                        FileIO.writeObject(biggestHogFiles, Constants.BIGGEST_EXTERNAL_HOGFILES, path);
-                        FileIO.writeObject(smallestHogFiles, Constants.SMALLEST_EXTERNAL_HOGFILES, path);
-                        break;
-                    case Settings.ROOT_DIRECTORY:
-                        FileIO.writeObject(biggestHogFiles, Constants.BIGGEST_ROOT_HOGFILES, path);
-                        FileIO.writeObject(smallestHogFiles, Constants.SMALLEST_ROOT_HOGFILES, path);
-                        break;
-                }
-
-                runOnUiThread(new Runnable() {
-                    public void run() {
-
-                        if (!isTablet(getApplicationContext())) {
-                            if (mSectionsPagerAdapter == null) {
-                                Log.i(TAG, "mSectionsPagerAdapter == null");
-                                mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-                            }
-                            // Set up the ViewPager with the sections adapter.
-                            if (mViewPager == null) {
-                                Log.i(TAG, "mViewPager == null");
-                                mViewPager = (ViewPager) findViewById(R.id.pager);
-                                mViewPager.setAdapter(mSectionsPagerAdapter);
-                            }
-                        }
-
-                        for (int i = 0; i < fileListFragments.length; i++) {
-                            Log.i(TAG, "fileListFragments[" + i + "] is null: " + (fileListFragments[i] == null));
-                            if (fileListFragments[i] != null) {
-                                fileListFragments[i].setHogFiles((i == 1 ? smallestHogFiles : biggestHogFiles));
-                                fileListFragments[i].resetListView();
-                            }
-
-                        }
-
-                        try {
-                            progressDialog.dismiss();
-                            progressDialog = null;
-                        } catch (Exception e) {
-                            // nothing
-                        }
-                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    }
-                });
-
-            }
-        }).start();
-
     }
 
     private void onClick_About() {
@@ -823,110 +682,6 @@ public class MainActivity extends FragmentActivity {
         builder.setView(message);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
-    }
-
-    private void countFiles(File file) {
-        if (threadRunning) {
-            if (file.listFiles() != null)
-                for (File f : file.listFiles()) {
-                    if (f.isFile()
-                            && ((settings.getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(f, settings.getBiggestExternalExcludedHogFiles()))
-                            || (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(f, settings.getSmallestExternalExcludedHogFiles()))
-                            || (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(f, settings.getBiggestRootExcludedHogFiles())) || (settings
-                            .getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(f, settings.getSmallestRootExcludedHogFiles())))) {
-                        totalFileCount++;
-                        if (totalFileCount % 500 == 0)
-                            if (Constants.debugOn)
-                                Log.i(TAG, "File Count: " + totalFileCount);
-
-                    } else {
-                        // Recurse directories
-                        if (f != null && f.exists() && f.canRead() && !f.isHidden())
-                            countFiles(f);
-                    }
-                }
-        }
-    }
-
-    public void searchFiles(File folder) {
-        if (threadRunning) {
-            if (folder.listFiles() != null)
-                for (File file : folder.listFiles()) {
-                    if (file.isFile()
-                            && ((settings.getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(file, settings.getBiggestExternalExcludedHogFiles()))
-                            || (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(file, settings.getSmallestExternalExcludedHogFiles()))
-                            || (settings.getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(file, settings.getBiggestRootExcludedHogFiles())) || (settings
-                            .getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
-                            .isInExcludedHogFiles(file, settings.getSmallestRootExcludedHogFiles())))) {
-
-                        currentFileCount++;
-                        progressDialog.setProgress((int) currentFileCount);
-
-                        if (biggestHogFiles.size() < Constants.MAX_FILE_COUNT) {
-                            FileInformation newFileInformation = new FileInformation();
-                            newFileInformation.setName(file.getName());
-                            newFileInformation.setSize(file.length());
-                            newFileInformation.setLastModified(file.lastModified());
-                            newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-
-                            biggestHogFiles.add(newFileInformation);
-                        } else {
-                            for (FileInformation fileInformation : biggestHogFiles) {
-                                if (file.length() > fileInformation.getSize()) {
-                                    FileInformation newFileInformation = new FileInformation();
-                                    newFileInformation.setName(file.getName());
-                                    newFileInformation.setSize(file.length());
-                                    newFileInformation.setLastModified(file.lastModified());
-                                    newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-                                    biggestHogFiles.add(newFileInformation);
-
-                                    Collections.sort(biggestHogFiles);
-                                    biggestHogFiles.remove(biggestHogFiles.size() - 1);
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (smallestHogFiles.size() < Constants.MAX_FILE_COUNT) {
-                            FileInformation newFileInformation = new FileInformation();
-                            newFileInformation.setName(file.getName());
-                            newFileInformation.setSize(file.length());
-                            newFileInformation.setLastModified(file.lastModified());
-                            newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-
-                            smallestHogFiles.add(newFileInformation);
-                        } else {
-                            for (FileInformation fileInformation : smallestHogFiles) {
-                                if (file.length() < fileInformation.getSize()) {
-                                    FileInformation newFileInformation = new FileInformation();
-                                    newFileInformation.setName(file.getName());
-                                    newFileInformation.setSize(file.length());
-                                    newFileInformation.setLastModified(file.lastModified());
-                                    newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-                                    smallestHogFiles.add(newFileInformation);
-
-                                    Collections.sort(smallestHogFiles);
-                                    smallestHogFiles.remove(0);
-                                    break;
-                                }
-                            }
-                        }
-
-                    } else {
-                        // Recurse directories
-                        if (file != null && file.exists() && file.canRead() && !file.isHidden())
-                            searchFiles(file);
-                    }
-                }
-        }
-
     }
 
 }

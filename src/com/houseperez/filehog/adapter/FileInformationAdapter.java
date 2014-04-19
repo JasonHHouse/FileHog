@@ -38,6 +38,26 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
         this.fileInformations = fileInformations;
     }
 
+    public void setFileInformations(List<FileInformation> fileInformations) {
+        this.fileInformations = fileInformations;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+        return fileInformations.size();
+    }
+
+    @Override
+    public FileInformation getItem(int position) {
+        return fileInformations.get(position);
+    }
+
+    @Override
+    public int getPosition(FileInformation item) {
+        return fileInformations.indexOf(item);
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);

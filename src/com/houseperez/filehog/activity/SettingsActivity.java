@@ -43,7 +43,7 @@ public class SettingsActivity extends Activity {
 		super.onStop();
 		Log.i(TAG, "onStart(): " + TAG);
 
-		settings = Settings.getInstance(0);
+		settings = Settings.getInstance();
 
 		/*
 		 * if (settings == null) settings = new Settings(new ArrayList<File>(0),

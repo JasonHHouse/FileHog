@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.houseperez.filehog.adapter.FileInformationAdapter;
 import com.houseperez.util.Constants;
+import com.houseperez.util.FileIO;
 import com.houseperez.util.FileInformation;
 import com.houseperez.util.Settings;
 
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 public class FileListFragment extends ListFragment {
 
     public static final String ARG_SECTION_NUMBER = "section_number";
-    public static final String TAG = "FileListFragment";
+    public static final String TAG = FileListFragment.class.getName();
 
     // Globals
     private FileInformationAdapter fileInformationAdapter;
@@ -33,17 +34,11 @@ public class FileListFragment extends ListFragment {
     private File clickedFile;
     private boolean isBiggestFiles;
     private Settings settings;
+    private RefreshAsync refreshAsync;
+    private TaskCallbacks taskCallbacks;
 
     public FileListFragment() {
         Log.i(TAG, "FileListFragment Constructor");
-    }
-
-    public ArrayList<FileInformation> getHogFiles() {
-        return hogFiles;
-    }
-
-    public void setHogFiles(ArrayList<FileInformation> hogFiles) {
-        this.hogFiles = hogFiles;
     }
 
     @Override
@@ -51,27 +46,36 @@ public class FileListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
         Log.i(TAG, "onActivityCreated()");
 
-        hogFiles = (ArrayList<FileInformation>) getArguments().getSerializable(Constants.HOG_FILES);
         isBiggestFiles = getArguments().getBoolean(Constants.IS_BIGGEST_FILES);
 
-        //resetListView();
+    }
 
-        fileInformationAdapter = new FileInformationAdapter(getActivity(), android.R.layout.simple_list_item_1, hogFiles);
-        setListAdapter(fileInformationAdapter);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Retain this fragment across configuration changes.
+        setRetainInstance(true);
+
+        // Create and execute the background task.
+        refreshAsync = new RefreshAsync(taskCallbacks);
+        File file = new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory()));
+        refreshAsync.execute(file);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         Log.i(TAG, "onAttach()");
-        settings = Settings.getInstance(0);
+        settings = Settings.getInstance();
+        taskCallbacks = (TaskCallbacks) activity;
     }
 
     @Override
     public void onListItemClick(ListView listView, View v, int position, long id) {
         FileInformation fileInformation = ((FileInformation) listView.getItemAtPosition((int) id));
 
-        if(hogFiles.contains(fileInformation)) {
+        if (hogFiles.contains(fileInformation)) {
             clickedFile = new File(fileInformation.getName());
         }
 
@@ -84,9 +88,21 @@ public class FileListFragment extends ListFragment {
 
     }
 
-    public void resetListView() {
+    public void updateAdapter(ArrayList<FileInformation> hogFiles) {
+        if (fileInformationAdapter == null) {
+            fileInformationAdapter = new FileInformationAdapter(getActivity(), android.R.layout.simple_list_item_1, hogFiles);
+            setListAdapter(fileInformationAdapter);
+        } else {
+            fileInformationAdapter.setFileInformations(hogFiles);
+        }
+    }
+
+    public void startFileSearch() {
+        File file = new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory()));
+        refreshAsync.execute(file);
+
 	/*	if (Constants.debugOn)
-			Log.i(TAG, "Updating UI");
+            Log.i(TAG, "Updating UI");
 
 		ArrayList<String> strValues = new ArrayList<String>();
 
@@ -202,16 +218,16 @@ public class FileListFragment extends ListFragment {
                                     .getIntFileCount())) {
                                 Log.i(TAG, "Refresh on biggest files");
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else if (!isBiggestFiles
                                     && (hogFiles.size() - settings.getSmallestExternalExcludedHogFiles().size() < settings
                                     .getIntFileCount())) {
                                 Log.i(TAG, "Refresh on smallest files");
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else {
-                                Log.i(TAG, "resetListView()");
-                                resetListView();
+                                Log.i(TAG, "startFileSearch()");
+                                startFileSearch();
                             }
                             break;
                         case Settings.ROOT_DIRECTORY:
@@ -220,16 +236,16 @@ public class FileListFragment extends ListFragment {
                                     .getIntFileCount())) {
                                 Log.i(TAG, "Refresh on biggest files");
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else if (!isBiggestFiles
                                     && (hogFiles.size() - settings.getSmallestRootExcludedHogFiles().size() < settings
                                     .getIntFileCount())) {
                                 Log.i(TAG, "Refresh on smallest files");
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else {
-                                Log.i(TAG, "resetListView()");
-                                resetListView();
+                                Log.i(TAG, "startFileSearch()");
+                                startFileSearch();
                             }
                             break;
                     }
@@ -245,7 +261,7 @@ public class FileListFragment extends ListFragment {
                 case DialogInterface.BUTTON_POSITIVE:
 
 				/*
-				 * Pair[] aryHogFiles = (isBiggestFiles ? biggestHogFiles
+                 * Pair[] aryHogFiles = (isBiggestFiles ? biggestHogFiles
 				 * .getHogFiles().toArray( new
 				 * Pair[biggestHogFiles.getHogFiles().size()]) :
 				 * smallestHogFiles.getHogFiles() .toArray( new
@@ -258,8 +274,8 @@ public class FileListFragment extends ListFragment {
                     for (FileInformation fileInformation : fileInformations) {
                         if (fileInformation.getName().equals(clickedFile.getAbsoluteFile())) {
                             Log.i(TAG, "Found file to delete");
-						/*
-						 * if (isBiggestFiles)
+                        /*
+                         * if (isBiggestFiles)
 						 * biggestHogFiles.getHogFiles().remove(pair); else
 						 * smallestHogFiles.getHogFiles().remove(pair);
 						 */
@@ -280,14 +296,14 @@ public class FileListFragment extends ListFragment {
                                     && hogFiles.size() - settings.getBiggestExternalExcludedHogFiles().size() < settings
                                     .getIntFileCount()) {
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else if (!isBiggestFiles
                                     && hogFiles.size() - settings.getSmallestExternalExcludedHogFiles().size() < settings
                                     .getIntFileCount()) {
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else {
-                                resetListView();
+                                startFileSearch();
                             }
                             break;
                         case Settings.ROOT_DIRECTORY:
@@ -295,15 +311,15 @@ public class FileListFragment extends ListFragment {
                                     && hogFiles.size() - settings.getBiggestRootExcludedHogFiles().size() < settings
                                     .getIntFileCount()) {
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
                             } else if (!isBiggestFiles
                                     && hogFiles.size() - settings.getSmallestRootExcludedHogFiles().size() < settings
                                     .getIntFileCount()) {
 
-                                ((MainActivity) getActivity()).refresh();
+                                startFileSearch();
 
                             } else {
-                                resetListView();
+                                startFileSearch();
                             }
                             break;
                     }
@@ -314,5 +330,19 @@ public class FileListFragment extends ListFragment {
             dialog.dismiss();
         }
     };
+
+    /**
+     * Callback interface through which the fragment will report the
+     * task's progress and results back to the Activity.
+     */
+    static interface TaskCallbacks {
+        void onPreExecute();
+
+        void onProgressUpdate(int percent);
+
+        void onCancelled();
+
+        void onPostExecute(ArrayList<FileInformation> biggestHogFiles, ArrayList<FileInformation> smallestHogFiles);
+    }
 
 }
