@@ -19,6 +19,7 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
 
     private static final String TAG = RefreshAsync.class.getName();
 
+    private long timer;
     private Settings settings;
     private FileListFragment.TaskCallbacks taskCallbacks;
     private ArrayList<FileInformation> biggestHogFiles;
@@ -42,6 +43,7 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
         if (taskCallbacks != null) {
             taskCallbacks.onPreExecute();
         }
+        timer = System.currentTimeMillis();
     }
 
     @Override
@@ -63,6 +65,8 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
         if (taskCallbacks != null) {
             taskCallbacks.onPostExecute(biggestHogFiles, smallestHogFiles);
         }
+        timer = System.currentTimeMillis() - timer;
+        Log.d(TAG, "timer: " + timer);
     }
 
     public void searchFiles(File folder) {
@@ -78,6 +82,7 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
                         .getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
                         .isInExcludedHogFiles(file, settings.getSmallestRootExcludedHogFiles())))) {
 
+                    //Add the file because we're under the max number of files required
                     if (biggestHogFiles.size() < Constants.MAX_FILE_COUNT) {
                         FileInformation newFileInformation = new FileInformation();
                         newFileInformation.setName(file.getName());
@@ -87,18 +92,27 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
 
                         biggestHogFiles.add(newFileInformation);
                     } else {
-                        for (FileInformation fileInformation : biggestHogFiles) {
-                            if (file.length() > fileInformation.getSize()) {
-                                FileInformation newFileInformation = new FileInformation();
-                                newFileInformation.setName(file.getName());
-                                newFileInformation.setSize(file.length());
-                                newFileInformation.setLastModified(file.lastModified());
-                                newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-                                biggestHogFiles.add(newFileInformation);
+                        //Get the last file
+                        FileInformation lastFileInformation = biggestHogFiles.get(Constants.MAX_FILE_COUNT - 1);
 
-                                Collections.sort(biggestHogFiles);
-                                biggestHogFiles.remove(biggestHogFiles.size() - 1);
-                                break;
+                        //If the file is bigger than the last file, add the file, otherwise skip that file
+                        if (file.length() > lastFileInformation.getSize()) {
+                            int position = 0;
+                            for (FileInformation fileInformation : biggestHogFiles) {
+                                if (file.length() > fileInformation.getSize()) {
+                                    FileInformation newFileInformation = new FileInformation();
+                                    newFileInformation.setName(file.getName());
+                                    newFileInformation.setSize(file.length());
+                                    newFileInformation.setLastModified(file.lastModified());
+                                    newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
+                                    biggestHogFiles.add(position, newFileInformation);
+
+                                    //Collections.sort(biggestHogFiles);
+                                    biggestHogFiles.remove(biggestHogFiles.size() - 1);
+                                    break;
+                                } else {
+                                    position++;
+                                }
                             }
                         }
                     }
@@ -112,18 +126,27 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
 
                         smallestHogFiles.add(newFileInformation);
                     } else {
-                        for (FileInformation fileInformation : smallestHogFiles) {
-                            if (file.length() < fileInformation.getSize()) {
-                                FileInformation newFileInformation = new FileInformation();
-                                newFileInformation.setName(file.getName());
-                                newFileInformation.setSize(file.length());
-                                newFileInformation.setLastModified(file.lastModified());
-                                newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-                                smallestHogFiles.add(newFileInformation);
+                        //Get the last file
+                        FileInformation lastFileInformation = biggestHogFiles.get(Constants.MAX_FILE_COUNT - 1);
 
-                                Collections.sort(smallestHogFiles);
-                                smallestHogFiles.remove(0);
-                                break;
+                        //If the file is smaller than the last file, add the file, otherwise skip that file
+                        if (file.length() < lastFileInformation.getSize()) {
+                            int position = 0;
+                            for (FileInformation fileInformation : smallestHogFiles) {
+                                if (file.length() < fileInformation.getSize()) {
+                                    FileInformation newFileInformation = new FileInformation();
+                                    newFileInformation.setName(file.getName());
+                                    newFileInformation.setSize(file.length());
+                                    newFileInformation.setLastModified(file.lastModified());
+                                    newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
+                                    smallestHogFiles.add(position, newFileInformation);
+
+                                    //Collections.sort(smallestHogFiles);
+                                    smallestHogFiles.remove(0);
+                                    break;
+                                } else {
+                                    position++;
+                                }
                             }
                         }
                     }

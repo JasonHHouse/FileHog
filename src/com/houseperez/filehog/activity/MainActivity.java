@@ -194,12 +194,17 @@
  * Changed from using runnable to use async task for searching for files
  * Removed counting dialog
  * Removed searching dialog
+ *
+ * Revision 4.03
+ *
+ * Speed up the file searching
+ * Fixed files not showing up
+ * 
  */
 
 package com.houseperez.filehog.activity;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -269,11 +274,11 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             releaseOfLiabilityDialog.show();
         } else {*/
 
-            needToRefreshList = settings.isOnOpenRefresh();
-            settings.setOnOpenRefresh(false);
-            // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
+        needToRefreshList = settings.isOnOpenRefresh();
+        settings.setOnOpenRefresh(false);
+        // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 
-            initalizeAndRefresh();
+        initalizeAndRefresh();
         //}
     }
 
@@ -651,6 +656,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             mViewPager.setAdapter(mSectionsPagerAdapter);
         }
 
+        fileListFragments[0].startFileSearch(this);
     }
 
     private void onClick_Settings() {
