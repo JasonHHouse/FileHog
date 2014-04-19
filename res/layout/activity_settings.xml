@@ -11,49 +11,11 @@
         android:orientation="vertical"
         android:padding="10dp" >
 
-        <TextView
-            android:id="@+id/txtGeneral"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="@string/GENERAL"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="3dp"
-            android:background="#BDBDBD" />
-
         <LinearLayout
             android:id="@+id/layoutSettingsDefault"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/txtFileCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="@string/FileCount"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
-            <SeekBar
-                android:id="@+id/seekFileCount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/txtFileCountNumber"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#BDBDBD" />
 
             <TextView
                 android:id="@+id/txtResearchFrequency"
@@ -68,19 +30,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/txtAdvanced"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text="@string/ADVANCED"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="3dp"
-            android:background="#BDBDBD" />
 
         <LinearLayout
             android:id="@+id/layoutAdvancedSettings"

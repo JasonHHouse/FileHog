@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -48,6 +47,17 @@ public class FileListFragment extends ListFragment {
         Log.i(TAG, "onActivityCreated()");
 
         isBiggestFiles = getArguments().getBoolean(Constants.IS_BIGGEST_FILES);
+
+        if(isBiggestFiles) {
+            startFileSearch(getActivity());
+        }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.i(TAG, "onViewCreated()");
+
     }
 
     @Override
@@ -56,10 +66,6 @@ public class FileListFragment extends ListFragment {
 
         // Retain this fragment across configuration changes.
         setRetainInstance(true);
-
-        // Create and execute the background task.
-        //File file = new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory()));
-        //refreshAsync.execute(file);
     }
 
     @Override
@@ -89,6 +95,7 @@ public class FileListFragment extends ListFragment {
         } else {
             fileInformationAdapter.setFileInformations(hogFiles);
         }
+        setListShown(true);
     }
 
     public void startFileSearch() {

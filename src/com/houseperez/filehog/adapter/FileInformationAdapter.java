@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
 
-    private List<FileInformation> fileInformations;
+    private List<FileInformation> hogFiles;
 
     private TextView txtNameLabel;
     //private TextView txtSizeLabel;
@@ -33,29 +33,29 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
     private TextView txtFolder;
 
 
-    public FileInformationAdapter(Context context, int resource, List<FileInformation> fileInformations) {
-        super(context, resource, fileInformations);
-        this.fileInformations = fileInformations;
+    public FileInformationAdapter(Context context, int resource, List<FileInformation> hogFiles) {
+        super(context, resource, hogFiles);
+        this.hogFiles = hogFiles;
     }
 
-    public void setFileInformations(List<FileInformation> fileInformations) {
-        this.fileInformations = fileInformations;
+    public void setFileInformations(List<FileInformation> hogFiles) {
+        this.hogFiles = hogFiles;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return fileInformations.size();
+        return hogFiles.size();
     }
 
     @Override
     public FileInformation getItem(int position) {
-        return fileInformations.get(position);
+        return hogFiles.get(position);
     }
 
     @Override
     public int getPosition(FileInformation item) {
-        return fileInformations.indexOf(item);
+        return hogFiles.indexOf(item);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
         txtLastModified.setText("");
         txtFolder.setText("");
 
-        FileInformation fileInformation = fileInformations.get(position);
+        FileInformation fileInformation = hogFiles.get(position);
         if (fileInformation != null) {
             txtName.setText(fileInformation.getName());
             String size = Utility.getCorrectByteSize(fileInformation.getSize());

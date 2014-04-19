@@ -218,6 +218,13 @@
  * Fixed dialog not showing when home button is pressed then reopening the app
  * Refresh now shows a circular loading bar when pressed
  *
+ * Revision 4.06
+ *
+ * Fixed random crashing when loading files/swiping between
+ * Fixed refreshing of the listview causing crashes
+ * Removed listview size setting, always 50 items on each
+ *
+ *
  */
 
 package com.houseperez.filehog.activity;
@@ -358,9 +365,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 return true;
             case R.id.Refresh:
                 needToRefreshList = true;
-
-                fileListFragments[0].updateAdapter(new ArrayList<FileInformation>());
-                fileListFragments[1].updateAdapter(new ArrayList<FileInformation>());
 
                 fileListFragments[0].setListShown(false);
                 fileListFragments[1].setListShown(false);
@@ -529,9 +533,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
         fileListFragments[0].updateAdapter(biggestHogFiles);
         fileListFragments[1].updateAdapter(smallestHogFiles);
-
-        fileListFragments[0].setListShown(true);
-        fileListFragments[1].setListShown(true);
     }
 
     /**
@@ -681,7 +682,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
             args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
             fileListFragments[i].setArguments(args);
-            fileListFragments[i].setRetainInstance(true);
+            //fileListFragments[i].setRetainInstance(true);
         }
 
         if (mSectionsPagerAdapter == null) {
@@ -696,7 +697,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             mViewPager.setAdapter(mSectionsPagerAdapter);
         }
 
-        refresh();
+        //refresh();
     }
 
     private void refresh() {
