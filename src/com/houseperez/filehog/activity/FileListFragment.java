@@ -10,7 +10,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -36,9 +38,17 @@ public class FileListFragment extends ListFragment {
     private Settings settings;
     private RefreshAsync refreshAsync;
     private TaskCallbacks taskCallbacks;
+    private Context context;
+    private boolean isViewCreated;
 
-    public FileListFragment() {
-        Log.i(TAG, "FileListFragment Constructor");
+    public boolean isViewCreated() {
+        return isViewCreated;
+    }
+
+    public FileListFragment(Context context, List<FileInformation> hogFiles) {
+        this.context = context;
+        this.hogFiles = hogFiles;
+        isViewCreated = false;
     }
 
     @Override
@@ -47,25 +57,15 @@ public class FileListFragment extends ListFragment {
         Log.i(TAG, "onActivityCreated()");
 
         isBiggestFiles = getArguments().getBoolean(Constants.IS_BIGGEST_FILES);
-
-        if(isBiggestFiles) {
-            startFileSearch(getActivity());
-        }
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        Log.i(TAG, "onViewCreated()");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        fileInformationAdapter = new FileInformationAdapter(context, android.R.layout.simple_list_item_1, hogFiles);
+        setListAdapter(fileInformationAdapter);
+        isViewCreated = true;
 
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Retain this fragment across configuration changes.
-        setRetainInstance(true);
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
@@ -77,25 +77,38 @@ public class FileListFragment extends ListFragment {
         }
 
         // Check if they want to delete file or view it AlertDialog.Builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("File Options");
         builder.setIcon(android.R.drawable.ic_menu_info_details);
-        builder.setMessage("Would you like to delete or view the file?");
+        builder.setMessage("Would you like to delete the file, view in folder, or add to the Excluded File list?");
         builder.setPositiveButton("Delete", dialogClickListener_DeleteCopyOrExclude);
-        builder.setNegativeButton("Copy", dialogClickListener_DeleteCopyOrExclude);
+        builder.setNegativeButton("View", dialogClickListener_DeleteCopyOrExclude);
         builder.setNeutralButton("Exclude", dialogClickListener_DeleteCopyOrExclude).show();
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        isViewCreated = false;
+    }
+
+    public void setHogFiles(List<FileInformation> hogFiles) {
+        this.hogFiles = hogFiles;
     }
 
     public void updateAdapter(List<FileInformation> hogFiles) {
         this.hogFiles = hogFiles;
         if (fileInformationAdapter == null) {
-            fileInformationAdapter = new FileInformationAdapter(getActivity(), android.R.layout.simple_list_item_1, hogFiles);
+            fileInformationAdapter = new FileInformationAdapter(context, android.R.layout.simple_list_item_1, hogFiles);
             setListAdapter(fileInformationAdapter);
         } else {
             fileInformationAdapter.setFileInformations(hogFiles);
         }
-        setListShown(true);
+
+        if (isViewCreated) {
+            setListShown(true);
+        }
     }
 
     public void startFileSearch() {
@@ -110,7 +123,7 @@ public class FileListFragment extends ListFragment {
 		ArrayList<String> strValues = new ArrayList<String>();
 
 		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
-		Log.i(TAG, "(MainActivity)getActivity() is " + (((MainActivity) getActivity()) == null ? "null" : "not null"));
+		Log.i(TAG, "(MainActivity)context is " + (((MainActivity) context) == null ? "null" : "not null"));
 
 		if (settings != null) {
 			switch (settings.getSelectedSearchDirectory()) {
@@ -163,7 +176,7 @@ public class FileListFragment extends ListFragment {
 			String[] values = strValues.toArray(new String[strValues.size()]);
 			Log.i(TAG, "values.length: " + values.length);
 
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1,
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1,
 					android.R.id.text1, values);
 			setListAdapter(adapter);
 			// adapter.notifyDataSetChanged();
@@ -186,7 +199,7 @@ public class FileListFragment extends ListFragment {
 		ArrayList<String> strValues = new ArrayList<String>();
 
 		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
-		Log.i(TAG, "(MainActivity)getActivity() is " + (((MainActivity) getActivity()) == null ? "null" : "not null"));
+		Log.i(TAG, "(MainActivity)context is " + (((MainActivity) context) == null ? "null" : "not null"));
 
 		if (settings != null) {
 			switch (settings.getSelectedSearchDirectory()) {
@@ -239,7 +252,7 @@ public class FileListFragment extends ListFragment {
 			String[] values = strValues.toArray(new String[strValues.size()]);
 			Log.i(TAG, "values.length: " + values.length);
 
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1,
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1,
 					android.R.id.text1, values);
 			setListAdapter(adapter);
 			// adapter.notifyDataSetChanged();
@@ -256,7 +269,7 @@ public class FileListFragment extends ListFragment {
             switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
                     // Delete
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setIcon(android.R.drawable.ic_dialog_alert);
                     builder.setTitle("Delete File");
                     builder.setMessage("Are you sure?");
@@ -266,11 +279,11 @@ public class FileListFragment extends ListFragment {
                 case DialogInterface.BUTTON_NEGATIVE:
                     // Copy
                     builder = null;
-                    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(
+                    ClipboardManager clipboard = (ClipboardManager) context.getSystemService(
                             Context.CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newUri(getActivity().getContentResolver(), "URI", Uri.fromFile(clickedFile));
+                    ClipData clip = ClipData.newUri(context.getContentResolver(), "URI", Uri.fromFile(clickedFile));
                     clipboard.setPrimaryClip(clip);
-                    Toast.makeText(getActivity().getApplicationContext(), "File copied to clipboard", Toast.LENGTH_SHORT)
+                    Toast.makeText(context.getApplicationContext(), "File copied to clipboard", Toast.LENGTH_SHORT)
                             .show();
                     break;
                 case DialogInterface.BUTTON_NEUTRAL:
@@ -291,7 +304,7 @@ public class FileListFragment extends ListFragment {
                             break;
                     }
 
-                    // FileIO.writeObject(settings, getActivity()
+                    // FileIO.writeObject(settings, context
                     // .getApplicationContext(), Constants.SETTINGS_FILE);
                     switch (settings.getSelectedSearchDirectory()) {
                         case Settings.EXTERNAL_DIRECTORY:

@@ -224,6 +224,10 @@
  * Fixed refreshing of the listview causing crashes
  * Removed listview size setting, always 50 items on each
  *
+ * Revision 4.07
+ *
+
+ *
  *
  */
 
@@ -264,13 +268,14 @@ import java.util.List;
 public class MainActivity extends FragmentActivity implements FileListFragment.TaskCallbacks {
 
     public static final String TAG = MainActivity.class.getName();
+    private final int FRAGMENT_LIST_SIZE = 4;
 
     // Globals
     private List<FileInformation> biggestHogFiles;
     private List<FileInformation> smallestHogFiles;
     private AlertDialog releaseOfLiabilityDialog;
     private Settings settings;
-    private boolean needToRefreshList;
+    private boolean manualRefresh;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private FileListFragment[] fileListFragments;
@@ -290,10 +295,10 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
         checkVersion();
 
-        fileListFragments = new FileListFragment[2];
+        fileListFragments = new FileListFragment[FRAGMENT_LIST_SIZE];
         settings = Settings.getInstance();
 
-        needToRefreshList = false;
+        manualRefresh = false;
 
     }
 
@@ -307,7 +312,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             releaseOfLiabilityDialog.show();
         } else {
 
-            needToRefreshList = settings.isOnOpenRefresh();
+            //needToRefreshList = settings.isOnOpenRefresh();
             settings.setOnOpenRefresh(false);
             // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
 
@@ -320,8 +325,9 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         super.onPause();
         Log.i(TAG, "onPause()");
 
-        if (releaseOfLiabilityDialog != null)
+        if (releaseOfLiabilityDialog != null) {
             releaseOfLiabilityDialog.dismiss();
+        }
 
         // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
     }
@@ -357,17 +363,20 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             case R.id.About:
                 onClick_About();
                 return true;
-            case R.id.Settings:
-                onClick_Settings();
-                return true;
+            //case R.id.Settings:
+            //   onClick_Settings();
+            //    return true;
             case R.id.ExcludedFiles:
                 onClick_ExcludeFiles();
                 return true;
             case R.id.Refresh:
-                needToRefreshList = true;
+                manualRefresh = true;
 
-                fileListFragments[0].setListShown(false);
-                fileListFragments[1].setListShown(false);
+                for (FileListFragment fileListFragment : fileListFragments) {
+                    if (fileListFragment.isViewCreated()) {
+                        fileListFragment.setListShown(false);
+                    }
+                }
 
                 refresh();
                 return true;
@@ -391,22 +400,23 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
                 if (mViewPager.getCurrentItem() == 0) {
                     mergedExcludedFiles.addAll(settings.getBiggestExternalExcludedHogFiles());
-                    strTitle = "Excluded Biggest External Directory Files";
+                    //strTitle = "Excluded Biggest External Directory Files";
                 } else {
                     mergedExcludedFiles.addAll(settings.getSmallestExternalExcludedHogFiles());
-                    strTitle = "Excluded Smallest External Directory Files";
+                    //strTitle = "Excluded Smallest External Directory Files";
                 }
                 break;
             case Settings.ROOT_DIRECTORY:
                 if (mViewPager.getCurrentItem() == 0) {
                     mergedExcludedFiles.addAll(settings.getBiggestRootExcludedHogFiles());
-                    strTitle = "Excluded Biggest Root Directory Files";
+
                 } else {
                     mergedExcludedFiles.addAll(settings.getSmallestRootExcludedHogFiles());
-                    strTitle = "Excluded Smallest Root Directory Files";
+                    //strTitle = "Excluded Smallest Root Directory Files";
                 }
                 break;
         }
+        strTitle = "Excluded Files";
 
         String[] excludedFiles = new String[mergedExcludedFiles.size()];
 
@@ -531,8 +541,18 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         this.biggestHogFiles = biggestHogFiles;
         this.smallestHogFiles = smallestHogFiles;
 
+        //if(manualRefresh) {
         fileListFragments[0].updateAdapter(biggestHogFiles);
         fileListFragments[1].updateAdapter(smallestHogFiles);
+        fileListFragments[2].updateAdapter(biggestHogFiles);
+        fileListFragments[3].updateAdapter(smallestHogFiles);
+        //} else {
+        //   fileListFragments[0].setHogFiles(biggestHogFiles);
+        //    fileListFragments[1].setHogFiles(smallestHogFiles);
+        //    fileListFragments[2].setHogFiles(biggestHogFiles);
+        //    fileListFragments[3].setHogFiles(smallestHogFiles);
+        // }
+        // manualRefresh = false;
     }
 
     /**
@@ -545,14 +565,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             super(fm);
             Log.i(TAG, "SectionsPagerAdapter()");
 
-            for (int i = 0; i < 2; i++) {
-                fileListFragments[i] = new FileListFragment();
-                Bundle args = new Bundle();
-                args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-                args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
-                fileListFragments[i].setArguments(args);
-                fileListFragments[i].setRetainInstance(true);
-            }
         }
 
         @Override
@@ -560,22 +572,22 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             return fileListFragments[position];
         }
 
-        public FileListFragment getFragment(int key) {
-            return (key == 1 ? fileListFragments[1] : fileListFragments[0]);
-        }
-
         @Override
         public int getCount() {
-            return 2;
+            return FRAGMENT_LIST_SIZE;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return getString(R.string.Largest);
+                    return "Largest External"; //getString(R.string.Largest);
                 case 1:
-                    return getString(R.string.Smallest);
+                    return "Smallest External"; //getString(R.string.Smallest);
+                case 2:
+                    return "Largest Root"; //getString(R.string.Largest);
+                case 3:
+                    return "Largest Root"; //getString(R.string.Smallest);
             }
             return null;
         }
@@ -654,7 +666,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 Log.i(TAG, "User agreed on " + strOutput);
 
                 FileIO.writeObject(strOutput, Constants.RELEASE_OF_LIABILITY_FILE, path);
-                needToRefreshList = settings.isOnOpenRefresh();
+                //needToRefreshList = settings.isOnOpenRefresh();
                 initalizeAndRefresh();
 
             }
@@ -676,13 +688,14 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     }
 
     private void initalizeAndRefresh() {
-        for (int i = 0; i < 2; i++) {
-            fileListFragments[i] = new FileListFragment();
+        for (int i = 0; i < fileListFragments.length; i++) {
+            fileListFragments[i] = new FileListFragment(getApplicationContext(), new ArrayList<FileInformation>());
             Bundle args = new Bundle();
             args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-            args.putBoolean(Constants.IS_BIGGEST_FILES, (i == 1 ? false : true));
+            args.putBoolean(Constants.IS_BIGGEST_FILES, (i % 2 == 0 ? true : false));
+            args.putBoolean(Constants.IS_ROOT, (i > 1 ? true : false));
             fileListFragments[i].setArguments(args);
-            //fileListFragments[i].setRetainInstance(true);
+            fileListFragments[i].setRetainInstance(true);
         }
 
         if (mSectionsPagerAdapter == null) {
@@ -697,7 +710,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             mViewPager.setAdapter(mSectionsPagerAdapter);
         }
 
-        //refresh();
+        refresh();
     }
 
     private void refresh() {
@@ -712,25 +725,27 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
     private void onClick_About() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        final TextView message = new TextView(MainActivity.this);
 
-        final SpannableString s = new SpannableString("www.houseperez.com");
+        View view = getLayoutInflater().inflate(R.layout.about_layout, null);
+        TextView txtAbout = (TextView) view.findViewById(R.id.txtAbout);
+        TextView txtLink = (TextView) view.findViewById(R.id.txtLink);
+
+        SpannableString s = new SpannableString("www.houseperez.com");
         Linkify.addLinks(s, Linkify.WEB_URLS);
-        message.setText(s);
-        message.setMovementMethod(LinkMovementMethod.getInstance());
-        message.setTextSize(20);
+        txtLink.setText(s);
+        txtLink.setMovementMethod(LinkMovementMethod.getInstance());
 
-        builder.setTitle("About FileHog v " + Constants.VERSION);
-        builder.setMessage("A product of HousePerez. " + "For more information, please visit us at: ");
+        txtAbout.setText("A product of HousePerez. " + "For more information, please visit us at:");
+
+        builder.setTitle("About v" + Constants.VERSION);
+        builder.setView(view);
         builder.setNeutralButton(R.string.Okay, new DialogInterface.OnClickListener() {
-
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Close Dialog
                 dialog.cancel();
             }
         });
-        builder.setView(message);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
