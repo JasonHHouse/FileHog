@@ -19,15 +19,17 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
 
     private static final String TAG = RefreshAsync.class.getName();
 
+    private boolean isRoot;
     private long timer;
     private Settings settings;
     private FileListFragment.TaskCallbacks taskCallbacks;
     private List<FileInformation> hogFiles;
 
-    public RefreshAsync(FileListFragment.TaskCallbacks taskCallbacks) {
+    public RefreshAsync(FileListFragment.TaskCallbacks taskCallbacks, boolean isRoot) {
         this.taskCallbacks = taskCallbacks;
         this.settings = Settings.getInstance();
         hogFiles = new ArrayList<FileInformation>(2500);
+        this.isRoot = isRoot;
     }
 
     @Override
@@ -73,7 +75,7 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
         }
 
         if (taskCallbacks != null) {
-            taskCallbacks.onPostExecute(biggestHogFiles, smallestHogFiles);
+            taskCallbacks.onPostExecute(biggestHogFiles, smallestHogFiles, isRoot);
         }
         timer = System.currentTimeMillis() - timer;
         Log.d(TAG, "timer: " + timer);
@@ -91,75 +93,6 @@ public class RefreshAsync extends AsyncTask<File, Integer, Void> {
                         .isInExcludedHogFiles(file, settings.getBiggestRootExcludedHogFiles())) || (settings
                         .getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
                         .isInExcludedHogFiles(file, settings.getSmallestRootExcludedHogFiles())))) {
-
-                    //Add the file because we're under the max number of files required
-                  /*  if (biggestHogFiles.size() < Constants.MAX_FILE_COUNT) {
-                        FileInformation newFileInformation = new FileInformation();
-                        newFileInformation.setName(file.getName());
-                        newFileInformation.setSize(file.length());
-                        newFileInformation.setLastModified(file.lastModified());
-                        newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-
-                        biggestHogFiles.add(newFileInformation);
-                    } else {
-                        //Get the last file
-                        FileInformation lastFileInformation = biggestHogFiles.get(Constants.MAX_FILE_COUNT - 1);
-
-                        //If the file is bigger than the last file, add the file, otherwise skip that file
-                        if (file.length() > lastFileInformation.getSize()) {
-                            int position = 0;
-                            for (FileInformation fileInformation : biggestHogFiles) {
-                                if (file.length() > fileInformation.getSize()) {
-                                    FileInformation newFileInformation = new FileInformation();
-                                    newFileInformation.setName(file.getName());
-                                    newFileInformation.setSize(file.length());
-                                    newFileInformation.setLastModified(file.lastModified());
-                                    newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-                                    biggestHogFiles.add(position, newFileInformation);
-
-                                    //Collections.sort(biggestHogFiles);
-                                    biggestHogFiles.remove(biggestHogFiles.size() - 1);
-                                    break;
-                                } else {
-                                    position++;
-                                }
-                            }
-                        }
-                    }
-
-                    if (smallestHogFiles.size() < Constants.MAX_FILE_COUNT) {
-                        FileInformation newFileInformation = new FileInformation();
-                        newFileInformation.setName(file.getName());
-                        newFileInformation.setSize(file.length());
-                        newFileInformation.setLastModified(file.lastModified());
-                        newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-
-                        smallestHogFiles.add(newFileInformation);
-                    } else {
-                        //Get the last file
-                        FileInformation lastFileInformation = biggestHogFiles.get(Constants.MAX_FILE_COUNT - 1);
-
-                        //If the file is smaller than the last file, add the file, otherwise skip that file
-                        if (file.length() < lastFileInformation.getSize()) {
-                            int position = 0;
-                            for (FileInformation fileInformation : smallestHogFiles) {
-                                if (file.length() < fileInformation.getSize()) {
-                                    FileInformation newFileInformation = new FileInformation();
-                                    newFileInformation.setName(file.getName());
-                                    newFileInformation.setSize(file.length());
-                                    newFileInformation.setLastModified(file.lastModified());
-                                    newFileInformation.setFolder(file.getParentFile().getAbsolutePath());
-                                    smallestHogFiles.add(position, newFileInformation);
-
-                                    //Collections.sort(smallestHogFiles);
-                                    smallestHogFiles.remove(0);
-                                    break;
-                                } else {
-                                    position++;
-                                }
-                            }
-                        }
-                    } */
 
                     FileInformation fileInformation = new FileInformation();
                     fileInformation.setName(file.getName());

@@ -7,12 +7,12 @@
         android:title="@string/ExcludedFiles"
         android:icon="@drawable/ic_menu_block"
         android:showAsAction="ifRoom"></item>
-    <item
+    <!--item
         android:id="@+id/Refresh"
         android:orderInCategory="20"
         android:title="@string/Refresh"
         android:icon="@drawable/ic_menu_refresh"
-        android:showAsAction="ifRoom"></item>
+        android:showAsAction="ifRoom"></item-->
     <!--item
         android:id="@+id/Settings"
         android:orderInCategory="30"

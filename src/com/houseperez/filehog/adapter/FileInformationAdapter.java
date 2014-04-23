@@ -12,6 +12,7 @@ import com.houseperez.filehog.R;
 import com.houseperez.util.FileInformation;
 import com.houseperez.util.Utility;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +47,12 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
     @Override
     public int getCount() {
         return hogFiles.size();
+    }
+
+    @Override
+    public void clear() {
+        this.hogFiles = new ArrayList<FileInformation>();
+        notifyDataSetChanged();
     }
 
     @Override

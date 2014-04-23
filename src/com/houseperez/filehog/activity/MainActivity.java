@@ -239,6 +239,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -271,15 +272,18 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     private final int FRAGMENT_LIST_SIZE = 4;
 
     // Globals
-    private List<FileInformation> biggestHogFiles;
-    private List<FileInformation> smallestHogFiles;
+    private List<FileInformation> biggestExternalHogFiles;
+    private List<FileInformation> smallestExternalHogFiles;
+    private List<FileInformation> biggestRootHogFiles;
+    private List<FileInformation> smallestRootHogFiles;
     private AlertDialog releaseOfLiabilityDialog;
     private Settings settings;
-    private boolean manualRefresh;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private FileListFragment[] fileListFragments;
     private static File path;
+    private RefreshAsync refreshAsync;
+    private int currentPage;
 
     public static File getFilePath() {
         return path;
@@ -297,9 +301,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
         fileListFragments = new FileListFragment[FRAGMENT_LIST_SIZE];
         settings = Settings.getInstance();
-
-        manualRefresh = false;
-
     }
 
     @Override
@@ -311,11 +312,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
             releaseOfLiabilityDialog.show();
         } else {
-
-            //needToRefreshList = settings.isOnOpenRefresh();
             settings.setOnOpenRefresh(false);
-            // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
-
             initalizeAndRefresh();
         }
     }
@@ -328,8 +325,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         if (releaseOfLiabilityDialog != null) {
             releaseOfLiabilityDialog.dismiss();
         }
-
-        // FileIO.writeObject(settings, Constants.SETTINGS_FILE, path);
     }
 
     @Override
@@ -363,22 +358,8 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             case R.id.About:
                 onClick_About();
                 return true;
-            //case R.id.Settings:
-            //   onClick_Settings();
-            //    return true;
             case R.id.ExcludedFiles:
                 onClick_ExcludeFiles();
-                return true;
-            case R.id.Refresh:
-                manualRefresh = true;
-
-                for (FileListFragment fileListFragment : fileListFragments) {
-                    if (fileListFragment.isViewCreated()) {
-                        fileListFragment.setListShown(false);
-                    }
-                }
-
-                refresh();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -400,19 +381,15 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
                 if (mViewPager.getCurrentItem() == 0) {
                     mergedExcludedFiles.addAll(settings.getBiggestExternalExcludedHogFiles());
-                    //strTitle = "Excluded Biggest External Directory Files";
                 } else {
                     mergedExcludedFiles.addAll(settings.getSmallestExternalExcludedHogFiles());
-                    //strTitle = "Excluded Smallest External Directory Files";
                 }
                 break;
             case Settings.ROOT_DIRECTORY:
                 if (mViewPager.getCurrentItem() == 0) {
                     mergedExcludedFiles.addAll(settings.getBiggestRootExcludedHogFiles());
-
                 } else {
                     mergedExcludedFiles.addAll(settings.getSmallestRootExcludedHogFiles());
-                    //strTitle = "Excluded Smallest Root Directory Files";
                 }
                 break;
         }
@@ -468,49 +445,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                                     break;
                             }
 
-                    // FileIO.writeObject(settings,
-                    // Constants.SETTINGS_FILE, path);
-
-                    switch (settings.getSelectedSearchDirectory()) {
-                        case Settings.EXTERNAL_DIRECTORY:
-                            if ((biggestHogFiles.size()
-                                    - settings.getBiggestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
-                                Log.i(TAG, "Refresh on biggest files");
-
-                                refresh();
-                            } else if ((smallestHogFiles.size()
-                                    - settings.getSmallestExternalExcludedHogFiles().size() < settings.getIntFileCount())) {
-                                Log.i(TAG, "Refresh on smallest files");
-
-                                refresh();
-                            } else {
-                                Log.i(TAG, "startFileSearch()");
-
-                                for (FileListFragment fileListFragment : fileListFragments)
-                                    if (fileListFragment != null)
-                                        fileListFragment.startFileSearch();
-                            }
-
-                            break;
-                        case Settings.ROOT_DIRECTORY:
-                            if ((biggestHogFiles.size() - settings.getBiggestRootExcludedHogFiles().size() < settings
-                                    .getIntFileCount())) {
-                                Log.i(TAG, "Refresh on biggest files");
-
-                                refresh();
-                            } else if ((smallestHogFiles.size()
-                                    - settings.getSmallestRootExcludedHogFiles().size() < settings.getIntFileCount())) {
-                                Log.i(TAG, "Refresh on smallest files");
-
-                                refresh();
-                            } else {
-                                Log.i(TAG, "startFileSearch()");
-                                for (FileListFragment fileListFragment : fileListFragments)
-                                    if (fileListFragment != null)
-                                        fileListFragment.startFileSearch();
-                            }
-                            break;
-                    }
+                    refresh();
                 }
                 dialog.dismiss();
             }
@@ -537,28 +472,21 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     }
 
     @Override
-    public void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles) {
-        this.biggestHogFiles = biggestHogFiles;
-        this.smallestHogFiles = smallestHogFiles;
-
-        //if(manualRefresh) {
-        fileListFragments[0].updateAdapter(biggestHogFiles);
-        fileListFragments[1].updateAdapter(smallestHogFiles);
-        fileListFragments[2].updateAdapter(biggestHogFiles);
-        fileListFragments[3].updateAdapter(smallestHogFiles);
-        //} else {
-        //   fileListFragments[0].setHogFiles(biggestHogFiles);
-        //    fileListFragments[1].setHogFiles(smallestHogFiles);
-        //    fileListFragments[2].setHogFiles(biggestHogFiles);
-        //    fileListFragments[3].setHogFiles(smallestHogFiles);
-        // }
-        // manualRefresh = false;
+    public void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles, boolean isRoot) {
+        if (!isRoot) {
+            this.biggestExternalHogFiles = biggestHogFiles;
+            this.smallestExternalHogFiles = smallestHogFiles;
+            fileListFragments[0].updateAdapter(biggestHogFiles);
+            fileListFragments[1].updateAdapter(smallestHogFiles);
+        } else {
+            this.biggestRootHogFiles = biggestHogFiles;
+            this.smallestRootHogFiles = smallestHogFiles;
+            fileListFragments[2].updateAdapter(biggestHogFiles);
+            fileListFragments[3].updateAdapter(smallestHogFiles);
+        }
+        //fileListFragments[currentPage].setListShown(true);
     }
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -569,6 +497,20 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
         @Override
         public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    fileListFragments[position].setHogFiles(biggestExternalHogFiles);
+                    break;
+                case 1:
+                    fileListFragments[position].setHogFiles(smallestExternalHogFiles);
+                    break;
+                case 2:
+                    fileListFragments[position].setHogFiles(biggestRootHogFiles);
+                    break;
+                case 3:
+                    fileListFragments[position].setHogFiles(smallestRootHogFiles);
+                    break;
+            }
             return fileListFragments[position];
         }
 
@@ -637,22 +579,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         return dir.delete();
     }
 
-    private void readHogFiles() {
-        switch (settings.getSelectedSearchDirectory()) {
-            case Settings.EXTERNAL_DIRECTORY:
-                biggestHogFiles = (ArrayList<FileInformation>) FileIO.readObject(Constants.BIGGEST_EXTERNAL_HOGFILES, path);
-                smallestHogFiles = (ArrayList<FileInformation>) FileIO.readObject(Constants.SMALLEST_EXTERNAL_HOGFILES, path);
-                break;
-            case Settings.ROOT_DIRECTORY:
-                biggestHogFiles = (ArrayList<FileInformation>) FileIO.readObject(Constants.BIGGEST_ROOT_HOGFILES, path);
-                smallestHogFiles = (ArrayList<FileInformation>) FileIO.readObject(Constants.SMALLEST_ROOT_HOGFILES, path);
-                break;
-            default:
-                biggestHogFiles = null;
-                smallestHogFiles = null;
-        }
-    }
-
     private AlertDialog.Builder buildReleaseOfLiabilityDialog() {
         View view = getLayoutInflater().inflate(R.layout.release_of_liability_dialog, null);
 
@@ -681,12 +607,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         return liabilityBuilder;
     }
 
-    //ToDo
-    //Fix
-    private boolean hogFilesOutOfDate() {
-        return true;//System.currentTimeMillis()// - settings.getTimeToDelayRefresh() > smallestHogFiles.getLngCreatedDate();
-    }
-
     private void initalizeAndRefresh() {
         for (int i = 0; i < fileListFragments.length; i++) {
             fileListFragments[i] = new FileListFragment(getApplicationContext(), new ArrayList<FileInformation>());
@@ -708,13 +628,34 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
             Log.i(TAG, "mViewPager == null");
             mViewPager = (ViewPager) findViewById(R.id.pager);
             mViewPager.setAdapter(mSectionsPagerAdapter);
+            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+                    currentPage = position;
+                    //fileListFragments[position].setListShown(true);
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+
+                }
+            });
         }
 
         refresh();
     }
 
     private void refresh() {
-        fileListFragments[0].startFileSearch(this);
+        refreshAsync = new RefreshAsync(this, true);
+        refreshAsync.execute(Environment.getRootDirectory());
+
+        refreshAsync = new RefreshAsync(this, false);
+        refreshAsync.execute(Environment.getExternalStorageDirectory());
     }
 
     private void onClick_Settings() {

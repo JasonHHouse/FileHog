@@ -36,19 +36,12 @@ public class FileListFragment extends ListFragment {
     private File clickedFile;
     private boolean isBiggestFiles;
     private Settings settings;
-    private RefreshAsync refreshAsync;
-    private TaskCallbacks taskCallbacks;
     private Context context;
-    private boolean isViewCreated;
-
-    public boolean isViewCreated() {
-        return isViewCreated;
-    }
 
     public FileListFragment(Context context, List<FileInformation> hogFiles) {
         this.context = context;
         this.hogFiles = hogFiles;
-        isViewCreated = false;
+        settings = Settings.getInstance();
     }
 
     @Override
@@ -61,10 +54,10 @@ public class FileListFragment extends ListFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        fileInformationAdapter = new FileInformationAdapter(context, android.R.layout.simple_list_item_1, hogFiles);
-        setListAdapter(fileInformationAdapter);
-        isViewCreated = true;
-
+        if(hogFiles != null) {
+            fileInformationAdapter = new FileInformationAdapter(context, android.R.layout.simple_list_item_1, hogFiles);
+            setListAdapter(fileInformationAdapter);
+        }
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -77,20 +70,18 @@ public class FileListFragment extends ListFragment {
         }
 
         // Check if they want to delete file or view it AlertDialog.Builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("File Options");
         builder.setIcon(android.R.drawable.ic_menu_info_details);
         builder.setMessage("Would you like to delete the file, view in folder, or add to the Excluded File list?");
         builder.setPositiveButton("Delete", dialogClickListener_DeleteCopyOrExclude);
         builder.setNegativeButton("View", dialogClickListener_DeleteCopyOrExclude);
         builder.setNeutralButton("Exclude", dialogClickListener_DeleteCopyOrExclude).show();
-
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        isViewCreated = false;
     }
 
     public void setHogFiles(List<FileInformation> hogFiles) {
@@ -105,162 +96,12 @@ public class FileListFragment extends ListFragment {
         } else {
             fileInformationAdapter.setFileInformations(hogFiles);
         }
-
-        if (isViewCreated) {
-            setListShown(true);
-        }
     }
 
     public void startFileSearch() {
         settings = Settings.getInstance();
-        File file = new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory()));
-        refreshAsync = new RefreshAsync(taskCallbacks);
-        refreshAsync.execute(file);
-
-	/*	if (Constants.debugOn)
-            Log.i(TAG, "Updating UI");
-
-		ArrayList<String> strValues = new ArrayList<String>();
-
-		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
-		Log.i(TAG, "(MainActivity)context is " + (((MainActivity) context) == null ? "null" : "not null"));
-
-		if (settings != null) {
-			switch (settings.getSelectedSearchDirectory()) {
-			case (Settings.EXTERNAL_DIRECTORY):
-				if (isBiggestFiles) {
-					for ( : hogFiles) {
-						if (!Utility
-								.isInExcludedHogFiles(pair.getFile(), settings.getBiggestExternalExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				} else {
-					for (Pair pair : hogFiles.getHogFiles()) {
-						if (!Utility.isInExcludedHogFiles(pair.getFile(),
-								settings.getSmallestExternalExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				}
-				break;
-			case Settings.ROOT_DIRECTORY:
-				if (isBiggestFiles) {
-					for (Pair pair : hogFiles.getHogFiles()) {
-						if (!Utility.isInExcludedHogFiles(pair.getFile(), settings.getBiggestRootExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				} else {
-					for (Pair pair : hogFiles.getHogFiles()) {
-						if (!Utility.isInExcludedHogFiles(pair.getFile(), settings.getSmallestRootExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				}
-				break;
-			}
-
-			String[] values = strValues.toArray(new String[strValues.size()]);
-			Log.i(TAG, "values.length: " + values.length);
-
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1,
-					android.R.id.text1, values);
-			setListAdapter(adapter);
-			// adapter.notifyDataSetChanged();
-			// this.setListAdapter(adapter);
-			this.getListView().setEnabled(true);
-		}*/
-
     }
 
-    public void startFileSearch(Activity activity) {
-        taskCallbacks = (TaskCallbacks) activity;
-        settings = Settings.getInstance();
-        File file = new File(FileIO.getSearchFolder(settings.getSelectedSearchDirectory()));
-        refreshAsync = new RefreshAsync(taskCallbacks);
-        refreshAsync.execute(file);
-
-	/*	if (Constants.debugOn)
-            Log.i(TAG, "Updating UI");
-
-		ArrayList<String> strValues = new ArrayList<String>();
-
-		Log.i(TAG, "settings is " + (settings == null ? "null" : "not null"));
-		Log.i(TAG, "(MainActivity)context is " + (((MainActivity) context) == null ? "null" : "not null"));
-
-		if (settings != null) {
-			switch (settings.getSelectedSearchDirectory()) {
-			case (Settings.EXTERNAL_DIRECTORY):
-				if (isBiggestFiles) {
-					for ( : hogFiles) {
-						if (!Utility
-								.isInExcludedHogFiles(pair.getFile(), settings.getBiggestExternalExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				} else {
-					for (Pair pair : hogFiles.getHogFiles()) {
-						if (!Utility.isInExcludedHogFiles(pair.getFile(),
-								settings.getSmallestExternalExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				}
-				break;
-			case Settings.ROOT_DIRECTORY:
-				if (isBiggestFiles) {
-					for (Pair pair : hogFiles.getHogFiles()) {
-						if (!Utility.isInExcludedHogFiles(pair.getFile(), settings.getBiggestRootExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				} else {
-					for (Pair pair : hogFiles.getHogFiles()) {
-						if (!Utility.isInExcludedHogFiles(pair.getFile(), settings.getSmallestRootExcludedHogFiles()))
-							strValues.add("File: " + pair.getFile().getAbsoluteFile() + "\nSize: "
-									+ Utility.getCorrectByteSize(pair.getSize()));
-
-						if (settings.getIntFileCount() <= strValues.size())
-							break;
-					}
-				}
-				break;
-			}
-
-			String[] values = strValues.toArray(new String[strValues.size()]);
-			Log.i(TAG, "values.length: " + values.length);
-
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1,
-					android.R.id.text1, values);
-			setListAdapter(adapter);
-			// adapter.notifyDataSetChanged();
-			// this.setListAdapter(adapter);
-			this.getListView().setEnabled(true);
-		}*/
-
-    }
 
     DialogInterface.OnClickListener dialogClickListener_DeleteCopyOrExclude = new DialogInterface.OnClickListener() {
         @Override
@@ -437,7 +278,7 @@ public class FileListFragment extends ListFragment {
 
         void onCancelled();
 
-        void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles);
+        void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles, boolean isRoot);
     }
 
 }
