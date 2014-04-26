@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.houseperez.filehog.R;
+import com.houseperez.filehog.activity.FileListFragment;
 import com.houseperez.util.FileInformation;
 import com.houseperez.util.Utility;
 
@@ -41,6 +42,11 @@ public class FileInformationAdapter extends ArrayAdapter<FileInformation> {
 
     public void setFileInformations(List<FileInformation> hogFiles) {
         this.hogFiles = hogFiles;
+        notifyDataSetChanged();
+    }
+
+    public void remove(int position) {
+        hogFiles.remove(position);
         notifyDataSetChanged();
     }
 

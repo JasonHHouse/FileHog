@@ -1,6 +1,5 @@
 package com.houseperez.filehog.activity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -18,11 +17,11 @@ import android.widget.Toast;
 
 import com.houseperez.filehog.adapter.FileInformationAdapter;
 import com.houseperez.util.Constants;
-import com.houseperez.util.FileIO;
 import com.houseperez.util.FileInformation;
 import com.houseperez.util.Settings;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileListFragment extends ListFragment {
@@ -33,10 +32,11 @@ public class FileListFragment extends ListFragment {
     // Globals
     private FileInformationAdapter fileInformationAdapter;
     private List<FileInformation> hogFiles;
-    private File clickedFile;
+    private FileInformation clickedFile;
     private boolean isBiggestFiles;
     private Settings settings;
     private Context context;
+    private int position;
 
     public FileListFragment(Context context, List<FileInformation> hogFiles) {
         this.context = context;
@@ -49,12 +49,13 @@ public class FileListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
         Log.i(TAG, "onActivityCreated()");
 
+        settings = Settings.getInstance();
         isBiggestFiles = getArguments().getBoolean(Constants.IS_BIGGEST_FILES);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if(hogFiles != null) {
+        if (hogFiles != null) {
             fileInformationAdapter = new FileInformationAdapter(context, android.R.layout.simple_list_item_1, hogFiles);
             setListAdapter(fileInformationAdapter);
         }
@@ -65,9 +66,9 @@ public class FileListFragment extends ListFragment {
     public void onListItemClick(ListView listView, View v, int position, long id) {
         FileInformation fileInformation = ((FileInformation) listView.getItemAtPosition((int) id));
 
-        if (hogFiles.contains(fileInformation)) {
-            clickedFile = new File(fileInformation.getName());
-        }
+        this.position = position;
+
+        clickedFile = fileInformation;
 
         // Check if they want to delete file or view it AlertDialog.Builder
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -98,8 +99,25 @@ public class FileListFragment extends ListFragment {
         }
     }
 
-    public void startFileSearch() {
-        settings = Settings.getInstance();
+    //public void startFileSearch() {
+    //    settings = Settings.getInstance();
+
+
+    //MainActivity mainActivity = (MainActivity) getActivity();
+    //mainActivity.refresh();
+    //Toast.makeText(context.getApplicationContext(), "Refreshing", Toast.LENGTH_SHORT).show();
+    //  }
+
+    private List<FileInformation> removeExcludedFromHogFiles(List<FileInformation> excludedHogFiles) {
+        List<FileInformation> updatedHogFiles = new ArrayList<FileInformation>();
+        for (FileInformation fileInformation : hogFiles) {
+            updatedHogFiles.add(fileInformation);
+        }
+
+        for (FileInformation fileInformation : excludedHogFiles) {
+            updatedHogFiles.remove(fileInformation);
+        }
+        return updatedHogFiles;
     }
 
 
@@ -110,7 +128,7 @@ public class FileListFragment extends ListFragment {
             switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
                     // Delete
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setIcon(android.R.drawable.ic_dialog_alert);
                     builder.setTitle("Delete File");
                     builder.setMessage("Are you sure?");
@@ -122,66 +140,37 @@ public class FileListFragment extends ListFragment {
                     builder = null;
                     ClipboardManager clipboard = (ClipboardManager) context.getSystemService(
                             Context.CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newUri(context.getContentResolver(), "URI", Uri.fromFile(clickedFile));
+                    File file = new File(clickedFile.getFolder() + File.separator + clickedFile.getName());
+                    Uri uri = Uri.fromFile(file);
+                    ClipData clip = ClipData.newUri(context.getContentResolver(), "URI", uri);
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(context.getApplicationContext(), "File copied to clipboard", Toast.LENGTH_SHORT)
                             .show();
                     break;
                 case DialogInterface.BUTTON_NEUTRAL:
                     // Exclude File
-                    Log.i(TAG, clickedFile.getPath() + " added to excludedHogFiles");
+                    Log.i(TAG, clickedFile.getFolder() + " added to excludedHogFiles");
                     switch (settings.getSelectedSearchDirectory()) {
                         case Settings.EXTERNAL_DIRECTORY:
-                            if (isBiggestFiles)
+                            if (isBiggestFiles) {
                                 settings.getBiggestExternalExcludedHogFiles().add(clickedFile);
-                            else
-                                settings.getSmallestExternalExcludedHogFiles().add(clickedFile);
-                            break;
-                        case Settings.ROOT_DIRECTORY:
-                            if (isBiggestFiles)
-                                settings.getBiggestRootExcludedHogFiles().add(clickedFile);
-                            else
-                                settings.getSmallestRootExcludedHogFiles().add(clickedFile);
-                            break;
-                    }
-
-                    // FileIO.writeObject(settings, context
-                    // .getApplicationContext(), Constants.SETTINGS_FILE);
-                    switch (settings.getSelectedSearchDirectory()) {
-                        case Settings.EXTERNAL_DIRECTORY:
-                            if (isBiggestFiles
-                                    && (hogFiles.size() - settings.getBiggestExternalExcludedHogFiles().size() < settings
-                                    .getIntFileCount())) {
-                                Log.i(TAG, "Refresh on biggest files");
-
-                                startFileSearch();
-                            } else if (!isBiggestFiles
-                                    && (hogFiles.size() - settings.getSmallestExternalExcludedHogFiles().size() < settings
-                                    .getIntFileCount())) {
-                                Log.i(TAG, "Refresh on smallest files");
-
-                                startFileSearch();
+                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getBiggestExternalExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(updatedHogFiles);
                             } else {
-                                Log.i(TAG, "startFileSearch()");
-                                startFileSearch();
+                                settings.getSmallestExternalExcludedHogFiles().add(clickedFile);
+                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getSmallestExternalExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(updatedHogFiles);
                             }
                             break;
                         case Settings.ROOT_DIRECTORY:
-                            if (isBiggestFiles
-                                    && (hogFiles.size() - settings.getBiggestRootExcludedHogFiles().size() < settings
-                                    .getIntFileCount())) {
-                                Log.i(TAG, "Refresh on biggest files");
-
-                                startFileSearch();
-                            } else if (!isBiggestFiles
-                                    && (hogFiles.size() - settings.getSmallestRootExcludedHogFiles().size() < settings
-                                    .getIntFileCount())) {
-                                Log.i(TAG, "Refresh on smallest files");
-
-                                startFileSearch();
+                            if (isBiggestFiles) {
+                                settings.getBiggestRootExcludedHogFiles().add(clickedFile);
+                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getBiggestRootExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(updatedHogFiles);
                             } else {
-                                Log.i(TAG, "startFileSearch()");
-                                startFileSearch();
+                                settings.getSmallestRootExcludedHogFiles().add(clickedFile);
+                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getSmallestRootExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(updatedHogFiles);
                             }
                             break;
                     }
@@ -204,20 +193,20 @@ public class FileListFragment extends ListFragment {
 				 * Pair[smallestHogFiles.getHogFiles() .size()]));
 				 */
                     FileInformation[] fileInformations = hogFiles.toArray(new FileInformation[hogFiles.size()]);
+                    File removingFile = new File(fileInformations[position].getFolder() + File.separator + fileInformations[position].getName());
 
-                    Log.i(TAG, "aryHogFiles.size(): " + fileInformations.length);
+                    Log.d(TAG, "removingFile: " + removingFile);
 
-                    for (FileInformation fileInformation : fileInformations) {
-                        if (fileInformation.getName().equals(clickedFile.getAbsoluteFile())) {
-                            Log.i(TAG, "Found file to delete");
-                        /*
-                         * if (isBiggestFiles)
-						 * biggestHogFiles.getHogFiles().remove(pair); else
-						 * smallestHogFiles.getHogFiles().remove(pair);
-						 */
-                            hogFiles.remove(fileInformation);
-                        }
+                    boolean isRemoved = removingFile.delete();
+                    //boolean isRemoved = hogFiles.remove(removingFile);
+                    String result;
+                    if (isRemoved) {
+                        result = "File removed";
+                        fileInformationAdapter.remove(position);
+                    } else {
+                        result = "File not removed";
                     }
+                    Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
 
                     // boolean isDeleted = clickedFile.delete();
                     clickedFile = null;
@@ -226,7 +215,7 @@ public class FileListFragment extends ListFragment {
                     // if (Constants.debugOn)
                     // FileIO.writeFile(strOutput, "FileHog_Output.txt");
 
-                    switch (settings.getSelectedSearchDirectory()) {
+                  /*  switch (settings.getSelectedSearchDirectory()) {
                         case Settings.EXTERNAL_DIRECTORY:
                             if (isBiggestFiles
                                     && hogFiles.size() - settings.getBiggestExternalExcludedHogFiles().size() < settings
@@ -258,7 +247,7 @@ public class FileListFragment extends ListFragment {
                                 startFileSearch();
                             }
                             break;
-                    }
+                    }*/
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
                     break;

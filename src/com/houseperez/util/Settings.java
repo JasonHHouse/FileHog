@@ -5,6 +5,7 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.houseperez.filehog.activity.MainActivity;
+import com.houseperez.filehog.adapter.FileInformationAdapter;
 
 import java.io.File;
 import java.io.Serializable;
@@ -43,20 +44,21 @@ public class Settings implements Serializable, Parcelable {
 
     // Global
     private static Settings instance = null;
-    private ArrayList<File> biggestExternalExcludedHogFiles;
-    private ArrayList<File> smallestExternalExcludedHogFiles;
-    private ArrayList<File> biggestRootExcludedHogFiles;
-    private ArrayList<File> smallestRootExcludedHogFiles;
+
+    private ArrayList<FileInformation> biggestExternalExcludedHogFiles;
+    private ArrayList<FileInformation> smallestExternalExcludedHogFiles;
+    private ArrayList<FileInformation> biggestRootExcludedHogFiles;
+    private ArrayList<FileInformation> smallestRootExcludedHogFiles;
     private int intFileCount;
     private int selectedSearchDirectory;
     private long timeToDelayRefresh;
     private boolean onOpenRefresh;
     private int researchFrequency;
 
-    private Settings(ArrayList<File> biggestExternalExcludedHogFiles,
-                     ArrayList<File> smallestExternalExcludedHogFiles,
-                     ArrayList<File> biggestRootExcludedHogFiles,
-                     ArrayList<File> smallestRootExcludedHogFiles, int intFileCount,
+    private Settings(ArrayList<FileInformation> biggestExternalExcludedHogFiles,
+                     ArrayList<FileInformation> smallestExternalExcludedHogFiles,
+                     ArrayList<FileInformation> biggestRootExcludedHogFiles,
+                     ArrayList<FileInformation> smallestRootExcludedHogFiles, int intFileCount,
                      int selectedSearchDirectory, long timeToDelayRefresh,
                      boolean onOpenRefresh, int researchFrequency) {
         super();
@@ -79,9 +81,9 @@ public class Settings implements Serializable, Parcelable {
             if ((instance = (Settings) FileIO.readObject(
                     Constants.SETTINGS_FILE, MainActivity.getFilePath())) == null) {
                 Log.i(TAG, "FileIO.readSettings(): null");
-                instance = new Settings(new ArrayList<File>(0),
-                        new ArrayList<File>(0), new ArrayList<File>(0),
-                        new ArrayList<File>(0), Constants.STARTING_FILE_COUNT,
+                instance = new Settings(new ArrayList<FileInformation>(),
+                        new ArrayList<FileInformation>(), new ArrayList<FileInformation>(),
+                        new ArrayList<FileInformation>(), Constants.STARTING_FILE_COUNT,
                         Settings.EXTERNAL_DIRECTORY, Settings.DAY_IN_MILLI,
                         false, Settings.DAILY);
                 FileIO.writeObject(instance, Constants.SETTINGS_FILE,
@@ -97,45 +99,45 @@ public class Settings implements Serializable, Parcelable {
         return instance;
     }
 
-    public ArrayList<File> getBiggestExternalExcludedHogFiles() {
+    public ArrayList<FileInformation> getBiggestExternalExcludedHogFiles() {
         return biggestExternalExcludedHogFiles;
     }
 
     public void setBiggestExternalExcludedHogFiles(
-            ArrayList<File> biggestExternalExcludedHogFiles) {
+            ArrayList<FileInformation> biggestExternalExcludedHogFiles) {
         this.biggestExternalExcludedHogFiles = biggestExternalExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
     }
 
-    public ArrayList<File> getSmallestExternalExcludedHogFiles() {
+    public ArrayList<FileInformation> getSmallestExternalExcludedHogFiles() {
         return smallestExternalExcludedHogFiles;
     }
 
     public void setSmallestExternalExcludedHogFiles(
-            ArrayList<File> smallestExternalExcludedHogFiles) {
+            ArrayList<FileInformation> smallestExternalExcludedHogFiles) {
         this.smallestExternalExcludedHogFiles = smallestExternalExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
     }
 
-    public ArrayList<File> getBiggestRootExcludedHogFiles() {
+    public ArrayList<FileInformation> getBiggestRootExcludedHogFiles() {
         return biggestRootExcludedHogFiles;
     }
 
     public void setBiggestRootExcludedHogFiles(
-            ArrayList<File> biggestRootExcludedHogFiles) {
+            ArrayList<FileInformation> biggestRootExcludedHogFiles) {
         this.biggestRootExcludedHogFiles = biggestRootExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
     }
 
-    public ArrayList<File> getSmallestRootExcludedHogFiles() {
+    public ArrayList<FileInformation> getSmallestRootExcludedHogFiles() {
         return smallestRootExcludedHogFiles;
     }
 
     public void setSmallestRootExcludedHogFiles(
-            ArrayList<File> smallestRootExcludedHogFiles) {
+            ArrayList<FileInformation> smallestRootExcludedHogFiles) {
         this.smallestRootExcludedHogFiles = smallestRootExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
@@ -222,12 +224,12 @@ public class Settings implements Serializable, Parcelable {
 
     @SuppressWarnings("unchecked")
     private Settings(Parcel in) {
-        biggestExternalExcludedHogFiles = (ArrayList<File>) in
+        biggestExternalExcludedHogFiles = (ArrayList<FileInformation>) in
                 .readSerializable();
-        smallestExternalExcludedHogFiles = (ArrayList<File>) in
+        smallestExternalExcludedHogFiles = (ArrayList<FileInformation>) in
                 .readSerializable();
-        biggestRootExcludedHogFiles = (ArrayList<File>) in.readSerializable();
-        smallestRootExcludedHogFiles = (ArrayList<File>) in.readSerializable();
+        biggestRootExcludedHogFiles = (ArrayList<FileInformation>) in.readSerializable();
+        smallestRootExcludedHogFiles = (ArrayList<FileInformation>) in.readSerializable();
         intFileCount = in.readInt();
         selectedSearchDirectory = in.readInt();
         timeToDelayRefresh = in.readLong();

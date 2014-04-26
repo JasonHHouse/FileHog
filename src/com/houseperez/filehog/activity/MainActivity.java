@@ -253,6 +253,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.houseperez.filehog.R;
 import com.houseperez.util.Constants;
@@ -283,7 +284,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     private FileListFragment[] fileListFragments;
     private static File path;
     private RefreshAsync refreshAsync;
-    private int currentPage;
+    //private int currentPage;
 
     public static File getFilePath() {
         return path;
@@ -360,6 +361,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 return true;
             case R.id.ExcludedFiles:
                 onClick_ExcludeFiles();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -373,7 +375,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     }
 
     private void onClick_ExcludeFiles() {
-        ArrayList<File> mergedExcludedFiles = new ArrayList<File>();
+        List<FileInformation> mergedExcludedFiles = new ArrayList<FileInformation>();
         String strTitle = "";
 
         switch (settings.getSelectedSearchDirectory()) {
@@ -400,7 +402,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         final boolean[] mSelectedItems = new boolean[mergedExcludedFiles.size()];
 
         for (int i = 0; i < mergedExcludedFiles.size(); i++) {
-            excludedFiles[i] = mergedExcludedFiles.get(i).getAbsoluteFile().toString();
+            excludedFiles[i] = mergedExcludedFiles.get(i).getName();
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -426,6 +428,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                     }
                 }
                 if (shouldRemove) {
+
                     for (int i = mSelectedItems.length - 1; i >= 0; i--)
                         if (mSelectedItems[i] == true)
                             switch (settings.getSelectedSearchDirectory()) {
@@ -445,6 +448,8 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                                     break;
                             }
 
+
+                    Toast.makeText(getApplicationContext(), "Refreshing", Toast.LENGTH_SHORT).show();
                     refresh();
                 }
                 dialog.dismiss();
@@ -527,9 +532,9 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 case 1:
                     return "Smallest External"; //getString(R.string.Smallest);
                 case 2:
-                    return "Largest Root"; //getString(R.string.Largest);
+                    return "Largest Internal"; //getString(R.string.Largest);
                 case 3:
-                    return "Largest Root"; //getString(R.string.Smallest);
+                    return "Smallest Internal"; //getString(R.string.Smallest);
             }
             return null;
         }
@@ -636,7 +641,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
                 @Override
                 public void onPageSelected(int position) {
-                    currentPage = position;
+                    //currentPage = position;
                     //fileListFragments[position].setListShown(true);
                 }
 
@@ -650,7 +655,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         refresh();
     }
 
-    private void refresh() {
+    public void refresh() {
         refreshAsync = new RefreshAsync(this, true);
         refreshAsync.execute(Environment.getRootDirectory());
 
