@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="About">About</string>
-    <string name="FileCount">File Count</string>
-    <string name="ExcludedFiles">Excluded Files</string>
-    <string name="Cancel">Cancel</string>
     <string name="Refresh">Refresh</string>
     <string name="Okay">Okay</string>
     <string name="ChangeDirectoryDialog">Select Search Folder</string>
@@ -12,34 +8,41 @@
     <string name="Directory">Search Directory</string>
     <string name="FileSort">File Sorting</string>
     <string name="app_name">FileHog</string>
-    <string name="Largest">Largest</string>
-    <string name="Smallest">Smallest</string>
-    <string name="External">External</string>
-    <string name="Root">Root</string>
-    <string name="Settings">Settings</string>
-    <string name="Advanced">Advanced</string>
-    <string name="GENERAL">GENERAL</string>
-    <string name="ADVANCED">ADVANCED</string>
 
-    <string-array name="Sorting">
-        <item>Sort by Biggest Files</item>
-        <item>Sort by Smallest Files</item>
-    </string-array>
-    <string-array name="Directory">
-        <item>External</item>
-        <item>Root</item>
-    </string-array>
-    <string-array name="ResearchFrequencyItems">
-        <item>Always</item>
-        <item>Hourly</item>
-        <item>Daily</item>
-        <item>Weekly</item>
-        <item>Bi-Weekly</item>
-    </string-array>
+    <!-- Adapter -->
+    <string name="Name">Name</string>
+    <string name="Modified">Modified</string>
+    <string name="Folder">Folder</string>
 
-    <string name="Searching">Searching Files&#8230;</string>
+    <!-- Tabs -->
+    <string name="SmallestExternal">Smallest External</string>
+    <string name="LargestExternal">Largest External</string>
+    <string name="LargestInternal">Largest Internal</string>
+    <string name="SmallestInternal">Smallest Internal</string>
+
+    <!-- Delete Copy Exclude Dialog -->
+    <string name="FileOptions">File Options</string>
+    <string name="Message">Would you like to delete the file, cold file location to the clipboard, or add to the Excluded File list?</string>
+    <string name="Delete">Delete</string>
+    <string name="Copy">Copy</string>
+    <string name="Exclude">Exclude</string>
+
+    <!-- About Dialog-->
+    <string name="About">About</string>
+    <string name="AboutMessage">A product of HousePerez. For more information, please visit us at:</string>
+
+    <!-- Excluded Files Dialog -->
+    <string name="ExcludedFiles">Excluded Files</string>
+    <string name="Cancel">Cancel</string>
+    <string name="Remove">Remove</string>
+
+
+    <!-- Release of Liability Dialog -->
+    <string name="ReleaseofLiability">Release of Liability</string>
+    <string name="IAgree">I agree</string>
+    <string name="IDontAgree">I don\'t agree</string>
     <string name="ReleaseOfLiability_part1">\tFileHog’s sole purpose is to identify files on an Android device by size.  Any decisions made or actions taken by a User based on information derived from FileHog, and any and all consequences therefrom, including but not limited to decisions to delete particular files, are the sole responsibility of the User.</string>
     <string name="ReleaseOfLiability_part2">\tBy downloading FileHog, the User hereby releases and discharges the developers, owners and managers of FileHog, their heirs, successors and assigns from any and all claims, causes of action, damages, judgments, costs, expenses or demands, in law or equity, which the User, their heirs, successors and assigns ever had, now have or hereafter can, shall or may have against the developers, owners or managers of FileHog for, upon or by reason of any matter, cause or thing whatsoever.</string>
-    <string name="ResearchFrequency">Research Frequency</string>
+
 
 </resources>

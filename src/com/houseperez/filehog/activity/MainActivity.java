@@ -224,7 +224,11 @@
  * Fixed refreshing of the listview causing crashes
  * Removed listview size setting, always 50 items on each
  *
- * Revision 4.07
+ * Revision 4.09
+ *
+ * Fixed copy to clipboard but showing view on dialog issue
+ * Fixed english to use strings.xml
+ * Updated french to use strings.xml
  *
 
  *
@@ -376,7 +380,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
     private void onClick_ExcludeFiles() {
         List<FileInformation> mergedExcludedFiles = new ArrayList<FileInformation>();
-        String strTitle = "";
 
         switch (settings.getSelectedSearchDirectory()) {
             case Settings.EXTERNAL_DIRECTORY:
@@ -395,7 +398,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 }
                 break;
         }
-        strTitle = "Excluded Files";
 
         String[] excludedFiles = new String[mergedExcludedFiles.size()];
 
@@ -406,7 +408,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(strTitle)
+        builder.setTitle(R.string.ExcludedFiles)
 
                 .setMultiChoiceItems(excludedFiles, null, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
@@ -417,7 +419,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                             mSelectedItems[which] = false;
                         }
                     }
-                }).setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                }).setPositiveButton(R.string.Remove, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 boolean shouldRemove = false;
@@ -528,13 +530,13 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Largest External"; //getString(R.string.Largest);
+                    return getString(R.string.LargestExternal);
                 case 1:
-                    return "Smallest External"; //getString(R.string.Smallest);
+                    return getString(R.string.SmallestExternal);
                 case 2:
-                    return "Largest Internal"; //getString(R.string.Largest);
+                    return getString(R.string.LargestInternal);
                 case 3:
-                    return "Smallest Internal"; //getString(R.string.Smallest);
+                    return getString(R.string.SmallestInternal);
             }
             return null;
         }
@@ -588,10 +590,10 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         View view = getLayoutInflater().inflate(R.layout.release_of_liability_dialog, null);
 
         AlertDialog.Builder liabilityBuilder = new AlertDialog.Builder(this);
-        liabilityBuilder.setTitle("Release of Liability");
+        liabilityBuilder.setTitle(R.string.ReleaseofLiability);
         liabilityBuilder.setView(view);
         liabilityBuilder.setCancelable(false);
-        liabilityBuilder.setPositiveButton("I agree", new DialogInterface.OnClickListener() {
+        liabilityBuilder.setPositiveButton(R.string.IAgree, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String strOutput = "User agreed on " + DateFormat.getDateTimeInstance().format(new Date());
                 Log.i(TAG, "User agreed on " + strOutput);
@@ -602,7 +604,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
 
             }
         });
-        liabilityBuilder.setNegativeButton("I don't agree", new DialogInterface.OnClickListener() {
+        liabilityBuilder.setNegativeButton(R.string.IDontAgree, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 releaseOfLiabilityDialog.dismiss();
                 releaseOfLiabilityDialog = null;
@@ -663,12 +665,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         refreshAsync.execute(Environment.getExternalStorageDirectory());
     }
 
-    private void onClick_Settings() {
-        Log.i(TAG, "settings.getResearchFrequency(): " + settings.getResearchFrequency());
-        Intent i = new Intent(this, SettingsActivity.class);
-        startActivity(i);
-    }
-
     private void onClick_About() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
@@ -681,9 +677,9 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         txtLink.setText(s);
         txtLink.setMovementMethod(LinkMovementMethod.getInstance());
 
-        txtAbout.setText("A product of HousePerez. " + "For more information, please visit us at:");
+        txtAbout.setText(R.string.AboutMessage);
 
-        builder.setTitle("About v" + Constants.VERSION);
+        builder.setTitle(getString(R.string.About) + " v" + Constants.VERSION);
         builder.setView(view);
         builder.setNeutralButton(R.string.Okay, new DialogInterface.OnClickListener() {
             @Override

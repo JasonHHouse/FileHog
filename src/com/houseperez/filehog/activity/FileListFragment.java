@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.houseperez.filehog.R;
 import com.houseperez.filehog.adapter.FileInformationAdapter;
 import com.houseperez.util.Constants;
 import com.houseperez.util.FileInformation;
@@ -59,7 +60,9 @@ public class FileListFragment extends ListFragment {
             fileInformationAdapter = new FileInformationAdapter(context, android.R.layout.simple_list_item_1, hogFiles);
             setListAdapter(fileInformationAdapter);
         }
-        return super.onCreateView(inflater, container, savedInstanceState);
+
+        View view = inflater.inflate(R.layout.fragment_main, null);
+        return view;
     }
 
     @Override
@@ -72,12 +75,12 @@ public class FileListFragment extends ListFragment {
 
         // Check if they want to delete file or view it AlertDialog.Builder
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("File Options");
+        builder.setTitle(R.string.FileOptions);
         builder.setIcon(android.R.drawable.ic_menu_info_details);
-        builder.setMessage("Would you like to delete the file, view in folder, or add to the Excluded File list?");
-        builder.setPositiveButton("Delete", dialogClickListener_DeleteCopyOrExclude);
-        builder.setNegativeButton("View", dialogClickListener_DeleteCopyOrExclude);
-        builder.setNeutralButton("Exclude", dialogClickListener_DeleteCopyOrExclude).show();
+        builder.setMessage(R.string.Message);
+        builder.setPositiveButton(R.string.Delete, dialogClickListener_DeleteCopyOrExclude);
+        builder.setNegativeButton(R.string.Copy, dialogClickListener_DeleteCopyOrExclude);
+        builder.setNeutralButton(R.string.Exclude, dialogClickListener_DeleteCopyOrExclude).show();
     }
 
     @Override

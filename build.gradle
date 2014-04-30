@@ -17,7 +17,7 @@ android {
     buildToolsVersion '19.0.3'
 
     defaultConfig {
-        minSdkVersion 13
+        minSdkVersion 11
         targetSdkVersion 19
     }
     sourceSets {
@@ -36,7 +36,6 @@ android {
 }
 
 dependencies {
-    compile 'com.google.android.gms:play-services:+'
     compile 'com.android.support:appcompat-v7:+'
     compile 'com.android.support:support-v4:+'
 }
