@@ -3,10 +3,6 @@
 
     <string name="Refresh">Refresh</string>
     <string name="Okay">Okay</string>
-    <string name="ChangeDirectoryDialog">Select Search Folder</string>
-    <string name="ChangeFileSortingDialog">Select File Sorting Option</string>
-    <string name="Directory">Search Directory</string>
-    <string name="FileSort">File Sorting</string>
     <string name="app_name">FileHog</string>
 
     <!-- Adapter -->

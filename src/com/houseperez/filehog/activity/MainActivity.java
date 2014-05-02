@@ -235,6 +235,12 @@
  * Updated spanish
  * Updated german
  *
+ * Revision 4.11
+ * Fixed the about hyperlink
+ * Updated russian
+ * Updated thai
+ * Updated indonesian
+ *
  */
 
 package com.houseperez.filehog.activity;
@@ -674,7 +680,7 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         TextView txtAbout = (TextView) view.findViewById(R.id.txtAbout);
         TextView txtLink = (TextView) view.findViewById(R.id.txtLink);
 
-        SpannableString s = new SpannableString("www.houseperez.com");
+        SpannableString s = new SpannableString("http://jasonhhouse.weebly.com/");
         Linkify.addLinks(s, Linkify.WEB_URLS);
         txtLink.setText(s);
         txtLink.setMovementMethod(LinkMovementMethod.getInstance());

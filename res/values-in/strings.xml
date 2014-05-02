@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="Refresh">segarkan</string>
+    <string name="Okay">oke</string>
+    <string name="app_name">FileHog</string>
+
+    <!-- Adapter -->
+    <string name="Name">nama</string>
+    <string name="Modified">Modifikasi</string>
+    <string name="Folder">map</string>
+
+    <!-- Tabs -->
+    <string name="SmallestExternal">terkecil eksternal</string>
+    <string name="LargestExternal">terbesar eksternal</string>
+    <string name="LargestInternal">terbesar internal</string>
+    <string name="SmallestInternal">terkecil internal</string>
+
+    <!-- Delete Copy Exclude Dialog -->
+    <string name="FileOptions">Pilihan File</string>
+    <string name="Message">Apakah Anda ingin menghapus file, dingin file location ke clipboard, atau menambah daftar file Dikecualikan?</string>
+    <string name="Delete">Hapus</string>
+    <string name="Copy">salinan</string>
+    <string name="Exclude">mengecualikan</string>
+
+    <!-- About Dialog-->
+    <string name="About">tentang</string>
+    <string name="AboutMessage">Sebuah produk dari HousePerez. Untuk informasi lebih lanjut, silahkan kunjungi kami di:</string>
+
+    <!-- Excluded Files Dialog -->
+    <string name="ExcludedFiles">file dikecualikan</string>
+    <string name="Cancel">membatalkan</string>
+    <string name="Remove">menghapus</string>
+
+
+    <!-- Release of Liability Dialog -->
+    <string name="ReleaseofLiability">Pelepasan Tanggung Jawab</string>
+    <string name="IAgree">saya setuju</string>
+    <string name="IDontAgree">Saya tidak setuju</string>
+    <string name="ReleaseOfLiability_part1">\tSatu-satunya tujuan FileHog adalah untuk mengidentifikasi file pada perangkat Android dengan ukuran. Setiap keputusan yang dibuat atau tindakan yang diambil oleh pengguna berdasarkan informasi yang diperoleh dari FileHog, dan setiap dan semua konsekuensi darinya, termasuk namun tidak terbatas pada keputusan untuk menghapus file tertentu, merupakan tanggung jawab dari Pengguna.</string>
+    <string name="ReleaseOfLiability_part2">\tDengan men-download FileHog, Pengguna dengan ini melepaskan dan pembuangan para pengembang, pemilik dan manajer FileHog, ahli waris, penerus dan memberikan dari setiap dan semua klaim, penyebab tindakan, kerusakan, penilaian, biaya, pengeluaran atau tuntutan, dalam hukum atau ekuitas, Pengguna yang, ahli waris, penerus dan memberikan pernah, sekarang telah atau dikemudian hari bisa, harus atau mungkin memiliki terhadap pengembang, pemilik atau pengelola FileHog untuk, atas atau dengan alasan suatu hal, penyebab atau hal apa pun.</string>
+
+</resources>

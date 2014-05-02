@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="Refresh">รีเฟรช</string>
+    <string name="Okay">ถูก</string>
+    <string name="app_name">FileHog</string>
+
+    <!-- Adapter -->
+    <string name="Name">ชื่อ</string>
+    <string name="Modified">เปลี่ยนแปลง</string>
+    <string name="Folder">โฟลเดอร์</string>
+
+    <!-- Tabs -->
+    <string name="SmallestExternal">ที่เล็กที่สุดภายนอก</string>
+    <string name="LargestExternal">ที่ใหญ่ที่สุดภายนอก</string>
+    <string name="LargestInternal">ที่ใหญ่ที่สุดภายใน</string>
+    <string name="SmallestInternal">ที่เล็กที่สุดภายใน</string>
+
+    <!-- Delete Copy Exclude Dialog -->
+    <string name="FileOptions">ตัวเลือกไฟล์</string>
+    <string name="Message">คุณต้องการที่จะลบไฟล์ที่ตั้งไฟล์เย็นไปยังคลิปบอร์ดหรือเพิ่มรายชื่อไฟล์ไม่รวม?</string>
+    <string name="Delete">ลบ</string>
+    <string name="Copy">สำเนา</string>
+    <string name="Exclude">ไม่รวม</string>
+
+    <!-- About Dialog-->
+    <string name="About">เกี่ยวกับ</string>
+    <string name="AboutMessage">ผลิตภัณฑ์ของ HousePerez สำหรับข้อมูลเพิ่มเติมกรุณาเยี่ยมชมเราได้ที่</string>
+
+    <!-- Excluded Files Dialog -->
+    <string name="ExcludedFiles">ไม่รวมไฟล์</string>
+    <string name="Cancel">ยกเลิก</string>
+    <string name="Remove">เอาออก</string>
+
+
+    <!-- Release of Liability Dialog -->
+    <string name="ReleaseofLiability">การเปิดตัวของความรับผิด</string>
+    <string name="IAgree">ผมเห็นด้วย</string>
+    <string name="IDontAgree">ผมไม่เห็นด้วย</string>
+    <string name="ReleaseOfLiability_part1">\tวัตถุประสงค์เพียงอย่างเดียว FileHog คือการระบุไฟล์บนอุปกรณ์ Android ตามขนาด การตัดสินใจใด ๆ ที่ทำหรือการกระทำที่ดำเนินการโดยผู้ใช้ขึ้นอยู่กับข้อมูลที่ได้มาจาก FileHog และผลกระทบใด ๆ และแตกรวมถึง แต่ไม่ จำกัด อยู่ที่การตัดสินใจที่จะลบไฟล์โดยเฉพาะอย่างยิ่งเป็นความรับผิดชอบ แต่เพียงผู้เดียวของผู้ใช้</string>
+    <string name="ReleaseOfLiability_part2">\tโดยการดาวน์โหลด FileHog ผู้ใช้บริการขอออกและปล่อยนักพัฒนาเจ้าของและผู้จัดการของ FileHog ทายาทของพวกเขาสืบทอดและกำหนดใด ๆ และจากการเรียกร้องทั้งหมดสาเหตุของการกระทำความเสียหายตัดสินค่าใช้จ่ายค่าใช้จ่ายหรือความต้องการในกฎหมายหรือตราสารทุน ซึ่งผู้ใช้ทายาทของพวกเขาสืบทอดและกำหนดเคยมีตอนนี้มีหรือต่อจากนี้สามารถจะหรืออาจจะมีกับนักพัฒนาเจ้าของหรือผู้จัดการของ FileHog สำหรับกับหรือโดยเหตุผลของเรื่องใด ๆ ที่ก่อให้เกิดหรือสิ่งใด ๆ</string>
+
+
+</resources>
