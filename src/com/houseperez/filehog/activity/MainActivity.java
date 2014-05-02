@@ -230,8 +230,10 @@
  * Fixed english to use strings.xml
  * Updated french to use strings.xml
  *
-
- *
+ * Revision 4.10
+ * Fixed the xxhdpi icon issue
+ * Updated spanish
+ * Updated german
  *
  */
 
