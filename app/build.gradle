@@ -1,25 +1,12 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url "https://maven.google.com"
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
-    }
-}
-
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 26
     buildToolsVersion '25.0.2'
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 25
+        minSdkVersion 21
+        targetSdkVersion 26
     }
     sourceSets {
         main {
@@ -34,10 +21,18 @@ android {
 
         instrumentTest.setRoot('tests')
     }
+
+    lintOptions {
+        checkReleaseBuilds false
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
+    }
+
 }
 
 dependencies {
-    compile 'com.android.support:support-compat:25.4.0'
-    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:support-compat:26.+'
+    compile 'com.android.support:appcompat-v7:26.+'
 }
 
