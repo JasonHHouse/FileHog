@@ -1,5 +1,7 @@
 package com.houseperez;
 
+import android.util.Log;
+
 import com.houseperez.util.FileInformation;
 
 import java.io.File;
@@ -15,11 +17,14 @@ import static com.houseperez.util.Utility.searchFiles;
 
 public class SearchRunnable implements Runnable {
 
+    private static final String TAG = SearchRunnable.class.getName();
+
     private File file;
     private CountDownLatch latch;
     private List<FileInformation> hogFiles;
 
     public SearchRunnable(File file, CountDownLatch latch) {
+        Log.d(TAG, "SearchRunnable(" + file + ")");
         this.file = file;
         this.latch = latch;
         hogFiles = new ArrayList<>(2500);
@@ -27,6 +32,7 @@ public class SearchRunnable implements Runnable {
 
     @Override
     public void run() {
+        Log.d(TAG, "run()");
         searchFiles(file, hogFiles);
         latch.countDown();
     }

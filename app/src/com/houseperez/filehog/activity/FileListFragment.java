@@ -16,7 +16,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.houseperez.filehog.R;
-import com.houseperez.filehog.adapter.FileInformationAdapter;
 import com.houseperez.util.Constants;
 import com.houseperez.util.FileInformation;
 import com.houseperez.util.Settings;

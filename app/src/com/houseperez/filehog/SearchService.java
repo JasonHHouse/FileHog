@@ -44,7 +44,7 @@ public final class SearchService extends IntentService {
 
             try {
                 latch.await();
-                Log.d(TAG, "Files found: " + runnable.getHogFiles());
+                Log.d(TAG, "Files found: " + runnable.getHogFiles().size());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

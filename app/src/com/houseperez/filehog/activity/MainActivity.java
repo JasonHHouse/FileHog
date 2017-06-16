@@ -381,6 +381,7 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
     }
 
     public void refresh() {
+        Log.d(TAG, "refresh()");
         Intent intent = new Intent();
         intent.setClass(getApplicationContext(), SearchService.class);
         intent.putExtra("FILE", Environment.getExternalStorageDirectory().toString());
