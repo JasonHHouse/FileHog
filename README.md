@@ -1,7 +1,17 @@
 # FILEHOG
 
 This code is copyright (c) 2017 Jason H House
- 
+
+## Requirements
+Android Minimum Version 21
+Gradle 3.3
+Java 1.8
+
+## Building
+1. Pull down the source code
+2. Run *gradle clean build*
+3. Install apk on Android device
+
 ## History
 ##### v5.0
 * Coming soon!
