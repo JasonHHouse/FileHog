@@ -10,18 +10,16 @@
 
 package com.houseperez.filehog.activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
@@ -30,8 +28,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.houseperez.filehog.FileInfoAdapter;
 import com.houseperez.filehog.R;
 import com.houseperez.filehog.SearchService;
 import com.houseperez.util.Constants;
@@ -43,24 +41,16 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public final class MainActivity extends FragmentActivity implements FileListFragment.TaskCallbacks {
+public final class MainActivity extends Activity {
 
     private static final String TAG = MainActivity.class.getName();
     private static File path;
     private final int FRAGMENT_LIST_SIZE = 4;
     // Globals
-    private List<FileInformation> biggestExternalHogFiles;
-    private List<FileInformation> smallestExternalHogFiles;
-    private List<FileInformation> biggestRootHogFiles;
-    private List<FileInformation> smallestRootHogFiles;
     private AlertDialog releaseOfLiabilityDialog;
     private Settings settings;
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
-    private FileListFragment[] fileListFragments;
-    //private int currentPage;
+    private RecyclerView recyclerView;
 
     public static File getFilePath() {
         return path;
@@ -88,9 +78,10 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
 
         path = getDir("obj", Context.MODE_PRIVATE);
 
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+
         checkVersion();
 
-        fileListFragments = new FileListFragment[FRAGMENT_LIST_SIZE];
         settings = Settings.getInstance();
     }
 
@@ -98,13 +89,20 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
     protected void onResume() {
         super.onResume();
 
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setScrollbarFadingEnabled(false);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        //recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+
         if (FileIO.readObject(Constants.RELEASE_OF_LIABILITY_FILE, path) == null) {
             releaseOfLiabilityDialog = buildReleaseOfLiabilityDialog().create();
             releaseOfLiabilityDialog.setCanceledOnTouchOutside(false);
             releaseOfLiabilityDialog.show();
         } else {
             settings.setOnOpenRefresh(false);
-            initalizeAndRefresh();
+            initializeAndRefresh();
         }
     }
 
@@ -149,135 +147,9 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
             case R.id.About:
                 onClick_About();
                 return true;
-            case R.id.ExcludedFiles:
-                onClick_ExcludeFiles();
-
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    public boolean isTablet(Context context) {
-        boolean xlarge = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == 4);
-        boolean large = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE);
-        return (xlarge || large);
-    }
-
-    private void onClick_ExcludeFiles() {
-        List<FileInformation> mergedExcludedFiles = new ArrayList<FileInformation>();
-
-        switch (settings.getSelectedSearchDirectory()) {
-            case Settings.EXTERNAL_DIRECTORY:
-
-                if (mViewPager.getCurrentItem() == 0) {
-                    mergedExcludedFiles.addAll(settings.getBiggestExternalExcludedHogFiles());
-                } else {
-                    mergedExcludedFiles.addAll(settings.getSmallestExternalExcludedHogFiles());
-                }
-                break;
-            case Settings.ROOT_DIRECTORY:
-                if (mViewPager.getCurrentItem() == 0) {
-                    mergedExcludedFiles.addAll(settings.getBiggestRootExcludedHogFiles());
-                } else {
-                    mergedExcludedFiles.addAll(settings.getSmallestRootExcludedHogFiles());
-                }
-                break;
-        }
-
-        String[] excludedFiles = new String[mergedExcludedFiles.size()];
-
-        final boolean[] mSelectedItems = new boolean[mergedExcludedFiles.size()];
-
-        for (int i = 0; i < mergedExcludedFiles.size(); i++) {
-            excludedFiles[i] = mergedExcludedFiles.get(i).getName();
-        }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.ExcludedFiles)
-
-                .setMultiChoiceItems(excludedFiles, null, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        if (isChecked) {
-                            mSelectedItems[which] = true;
-                        } else if (mSelectedItems[which] == true) {
-                            mSelectedItems[which] = false;
-                        }
-                    }
-                }).setPositiveButton(R.string.Remove, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                boolean shouldRemove = false;
-                for (boolean selectedItem : mSelectedItems) {
-                    if (selectedItem) {
-                        shouldRemove = true;
-                        break;
-                    }
-                }
-                if (shouldRemove) {
-
-                    for (int i = mSelectedItems.length - 1; i >= 0; i--)
-                        if (mSelectedItems[i] == true)
-                            switch (settings.getSelectedSearchDirectory()) {
-                                case Settings.EXTERNAL_DIRECTORY:
-                                    if (mViewPager.getCurrentItem() == 0)
-                                        settings.getBiggestExternalExcludedHogFiles().remove(i);
-                                    else
-                                        settings.getSmallestExternalExcludedHogFiles().remove(i);
-
-                                    break;
-                                case Settings.ROOT_DIRECTORY:
-                                    if (mViewPager.getCurrentItem() == 0)
-                                        settings.getBiggestRootExcludedHogFiles().remove(i);
-                                    else
-                                        settings.getSmallestRootExcludedHogFiles().remove(i);
-
-                                    break;
-                            }
-
-
-                    Toast.makeText(getApplicationContext(), "Refreshing", Toast.LENGTH_SHORT).show();
-                    refresh();
-                }
-                dialog.dismiss();
-            }
-        }).setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    @Override
-    public void onPreExecute() {
-    }
-
-    @Override
-    public void onProgressUpdate(int percent) {
-    }
-
-    @Override
-    public void onCancelled() {
-    }
-
-    @Override
-    public void onPostExecute(List<FileInformation> biggestHogFiles, List<FileInformation> smallestHogFiles, boolean isRoot) {
-        if (!isRoot) {
-            this.biggestExternalHogFiles = biggestHogFiles;
-            this.smallestExternalHogFiles = smallestHogFiles;
-            fileListFragments[0].updateAdapter(biggestHogFiles);
-            fileListFragments[1].updateAdapter(smallestHogFiles);
-        } else {
-            this.biggestRootHogFiles = biggestHogFiles;
-            this.smallestRootHogFiles = smallestHogFiles;
-            fileListFragments[2].updateAdapter(biggestHogFiles);
-            fileListFragments[3].updateAdapter(smallestHogFiles);
-        }
-        //fileListFragments[currentPage].setListShown(true);
     }
 
     private void checkVersion() {
@@ -323,7 +195,7 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
 
                 FileIO.writeObject(strOutput, Constants.RELEASE_OF_LIABILITY_FILE, path);
                 //needToRefreshList = settings.isOnOpenRefresh();
-                initalizeAndRefresh();
+                initializeAndRefresh();
 
             }
         });
@@ -337,45 +209,9 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
         return liabilityBuilder;
     }
 
-    private void initalizeAndRefresh() {
-        for (int i = 0; i < fileListFragments.length; i++) {
-            fileListFragments[i] = new FileListFragment(getApplicationContext(), new ArrayList<FileInformation>());
-            Bundle args = new Bundle();
-            args.putInt(FileListFragment.ARG_SECTION_NUMBER, i + 1);
-            args.putBoolean(Constants.IS_BIGGEST_FILES, (i % 2 == 0 ? true : false));
-            args.putBoolean(Constants.IS_ROOT, (i > 1 ? true : false));
-            fileListFragments[i].setArguments(args);
-            fileListFragments[i].setRetainInstance(true);
-        }
-
-        if (mSectionsPagerAdapter == null) {
-            Log.i(TAG, "mSectionsPagerAdapter == null");
-            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        }
-
-        // Set up the ViewPager with the sections adapter.
-        if (mViewPager == null) {
-            Log.i(TAG, "mViewPager == null");
-            mViewPager = (ViewPager) findViewById(R.id.pager);
-            mViewPager.setAdapter(mSectionsPagerAdapter);
-            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-                }
-
-                @Override
-                public void onPageSelected(int position) {
-                    //currentPage = position;
-                    //fileListFragments[position].setListShown(true);
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int state) {
-
-                }
-            });
-        }
+    private void initializeAndRefresh() {
+        FileInfoAdapter fileInfoAdapter = new FileInfoAdapter(new ArrayList<FileInformation>());
+        recyclerView.setAdapter(fileInfoAdapter);
 
         refresh();
     }
@@ -415,53 +251,5 @@ public final class MainActivity extends FragmentActivity implements FileListFrag
         alertDialog.show();
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-            Log.i(TAG, "SectionsPagerAdapter()");
-
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    fileListFragments[position].setHogFiles(biggestExternalHogFiles);
-                    break;
-                case 1:
-                    fileListFragments[position].setHogFiles(smallestExternalHogFiles);
-                    break;
-                case 2:
-                    fileListFragments[position].setHogFiles(biggestRootHogFiles);
-                    break;
-                case 3:
-                    fileListFragments[position].setHogFiles(smallestRootHogFiles);
-                    break;
-            }
-            return fileListFragments[position];
-        }
-
-        @Override
-        public int getCount() {
-            return FRAGMENT_LIST_SIZE;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.LargestExternal);
-                case 1:
-                    return getString(R.string.SmallestExternal);
-                case 2:
-                    return getString(R.string.LargestInternal);
-                case 3:
-                    return getString(R.string.SmallestInternal);
-            }
-            return null;
-        }
-
-    }
 
 }
