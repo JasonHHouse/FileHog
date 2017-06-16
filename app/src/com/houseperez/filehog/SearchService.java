@@ -2,12 +2,15 @@ package com.houseperez.filehog;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.houseperez.SearchRunnable;
+import com.houseperez.filehog.util.FileInformation;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +39,7 @@ public final class SearchService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         if (intent != null) {
             String strFile = intent.getStringExtra("FILE");
+            ResultReceiver rec = intent.getParcelableExtra("receiverTag");
             Log.d(TAG, "strFile:" + strFile);
 
             File file = new File(strFile);
@@ -45,6 +49,9 @@ public final class SearchService extends IntentService {
             try {
                 latch.await();
                 Log.d(TAG, "Files found: " + runnable.getHogFiles().size());
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("hogFiles", (ArrayList< FileInformation>) runnable.getHogFiles());
+                rec.send(1, bundle);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

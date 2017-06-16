@@ -1,10 +1,10 @@
-package com.houseperez.util;
+package com.houseperez.filehog.util;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.houseperez.filehog.activity.MainActivity;
+import com.houseperez.filehog.MainActivity;
 
 import java.io.Serializable;
 import java.util.HashSet;

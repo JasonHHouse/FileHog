@@ -8,7 +8,7 @@
  * This code is copyright (c) 2012 HousePerez
  */
 
-package com.houseperez.filehog.activity;
+package com.houseperez.filehog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,6 +17,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,24 +30,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.houseperez.filehog.FileInfoAdapter;
-import com.houseperez.filehog.R;
-import com.houseperez.filehog.SearchService;
-import com.houseperez.util.Constants;
-import com.houseperez.util.FileIO;
-import com.houseperez.util.FileInformation;
-import com.houseperez.util.Settings;
+import com.houseperez.filehog.util.Constants;
+import com.houseperez.filehog.util.FileIO;
+import com.houseperez.filehog.util.FileInformation;
+import com.houseperez.filehog.util.Settings;
 
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends Activity implements SearchResultReceiver.Receiver {
 
     private static final String TAG = MainActivity.class.getName();
     private static File path;
-    private final int FRAGMENT_LIST_SIZE = 4;
     // Globals
     private AlertDialog releaseOfLiabilityDialog;
     private Settings settings;
@@ -102,8 +100,9 @@ public final class MainActivity extends Activity {
             releaseOfLiabilityDialog.show();
         } else {
             settings.setOnOpenRefresh(false);
-            initializeAndRefresh();
+            refresh();
         }
+
     }
 
     @Override
@@ -195,7 +194,8 @@ public final class MainActivity extends Activity {
 
                 FileIO.writeObject(strOutput, Constants.RELEASE_OF_LIABILITY_FILE, path);
                 //needToRefreshList = settings.isOnOpenRefresh();
-                initializeAndRefresh();
+                //initializeAndRefresh();
+                refresh();
 
             }
         });
@@ -209,11 +209,9 @@ public final class MainActivity extends Activity {
         return liabilityBuilder;
     }
 
-    private void initializeAndRefresh() {
-        FileInfoAdapter fileInfoAdapter = new FileInfoAdapter(new ArrayList<FileInformation>());
-        recyclerView.setAdapter(fileInfoAdapter);
-
-        refresh();
+    private void initialize(List<FileInformation> fileHogs) {
+        FileInformationAdapter fileInformationAdapter = new FileInformationAdapter(fileHogs);
+        recyclerView.setAdapter(fileInformationAdapter);
     }
 
     public void refresh() {
@@ -221,6 +219,9 @@ public final class MainActivity extends Activity {
         Intent intent = new Intent();
         intent.setClass(getApplicationContext(), SearchService.class);
         intent.putExtra("FILE", Environment.getExternalStorageDirectory().toString());
+        SearchResultReceiver searchResultReceiver = new SearchResultReceiver(new Handler());
+        searchResultReceiver.setReceiver(this);
+        intent.putExtra("receiverTag", searchResultReceiver);
         startService(intent);
     }
 
@@ -251,5 +252,11 @@ public final class MainActivity extends Activity {
         alertDialog.show();
     }
 
-
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        if (resultCode == 1) {
+            ArrayList<FileInformation> hogFiles = (ArrayList<FileInformation>) resultData.getSerializable("hogFiles");
+            initialize(hogFiles);
+        }
+    }
 }
