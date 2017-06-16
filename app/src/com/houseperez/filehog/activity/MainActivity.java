@@ -13,6 +13,7 @@ package com.houseperez.filehog.activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.houseperez.filehog.R;
+import com.houseperez.filehog.SearchService;
 import com.houseperez.util.Constants;
 import com.houseperez.util.FileIO;
 import com.houseperez.util.FileInformation;
@@ -43,11 +45,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends FragmentActivity implements FileListFragment.TaskCallbacks {
+public final class MainActivity extends FragmentActivity implements FileListFragment.TaskCallbacks {
 
-    public static final String TAG = MainActivity.class.getName();
+    private static final String TAG = MainActivity.class.getName();
+    private static File path;
     private final int FRAGMENT_LIST_SIZE = 4;
-
     // Globals
     private List<FileInformation> biggestExternalHogFiles;
     private List<FileInformation> smallestExternalHogFiles;
@@ -58,12 +60,24 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private FileListFragment[] fileListFragments;
-    private static File path;
-    private RefreshAsync refreshAsync;
     //private int currentPage;
 
     public static File getFilePath() {
         return path;
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+
+        return dir.delete();
     }
 
     @Override
@@ -266,55 +280,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         //fileListFragments[currentPage].setListShown(true);
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-            Log.i(TAG, "SectionsPagerAdapter()");
-
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    fileListFragments[position].setHogFiles(biggestExternalHogFiles);
-                    break;
-                case 1:
-                    fileListFragments[position].setHogFiles(smallestExternalHogFiles);
-                    break;
-                case 2:
-                    fileListFragments[position].setHogFiles(biggestRootHogFiles);
-                    break;
-                case 3:
-                    fileListFragments[position].setHogFiles(smallestRootHogFiles);
-                    break;
-            }
-            return fileListFragments[position];
-        }
-
-        @Override
-        public int getCount() {
-            return FRAGMENT_LIST_SIZE;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.LargestExternal);
-                case 1:
-                    return getString(R.string.SmallestExternal);
-                case 2:
-                    return getString(R.string.LargestInternal);
-                case 3:
-                    return getString(R.string.SmallestInternal);
-            }
-            return null;
-        }
-
-    }
-
     private void checkVersion() {
         Log.i(TAG, "checkVersion() starting");
         Double tempVersion = (Double) FileIO.readObject(Constants.VERSION_FILE, path);
@@ -342,20 +307,6 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
                 }
             }
         }
-    }
-
-    public static boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
-                if (!success) {
-                    return false;
-                }
-            }
-        }
-
-        return dir.delete();
     }
 
     private AlertDialog.Builder buildReleaseOfLiabilityDialog() {
@@ -430,11 +381,10 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
     }
 
     public void refresh() {
-        refreshAsync = new RefreshAsync(this, true);
-        refreshAsync.execute(Environment.getRootDirectory());
-
-        refreshAsync = new RefreshAsync(this, false);
-        refreshAsync.execute(Environment.getExternalStorageDirectory());
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), SearchService.class);
+        intent.putExtra("FILE", Environment.getExternalStorageDirectory().toString());
+        startService(intent);
     }
 
     private void onClick_About() {
@@ -462,6 +412,55 @@ public class MainActivity extends FragmentActivity implements FileListFragment.T
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        public SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+            Log.i(TAG, "SectionsPagerAdapter()");
+
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    fileListFragments[position].setHogFiles(biggestExternalHogFiles);
+                    break;
+                case 1:
+                    fileListFragments[position].setHogFiles(smallestExternalHogFiles);
+                    break;
+                case 2:
+                    fileListFragments[position].setHogFiles(biggestRootHogFiles);
+                    break;
+                case 3:
+                    fileListFragments[position].setHogFiles(smallestRootHogFiles);
+                    break;
+            }
+            return fileListFragments[position];
+        }
+
+        @Override
+        public int getCount() {
+            return FRAGMENT_LIST_SIZE;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getString(R.string.LargestExternal);
+                case 1:
+                    return getString(R.string.SmallestExternal);
+                case 2:
+                    return getString(R.string.LargestInternal);
+                case 3:
+                    return getString(R.string.SmallestInternal);
+            }
+            return null;
+        }
+
     }
 
 }

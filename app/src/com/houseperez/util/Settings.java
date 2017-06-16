@@ -5,11 +5,10 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.houseperez.filehog.activity.MainActivity;
-import com.houseperez.filehog.adapter.FileInformationAdapter;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Settings implements Serializable, Parcelable {
 
@@ -45,20 +44,20 @@ public class Settings implements Serializable, Parcelable {
     // Global
     private static Settings instance = null;
 
-    private ArrayList<FileInformation> biggestExternalExcludedHogFiles;
-    private ArrayList<FileInformation> smallestExternalExcludedHogFiles;
-    private ArrayList<FileInformation> biggestRootExcludedHogFiles;
-    private ArrayList<FileInformation> smallestRootExcludedHogFiles;
+    private Set<FileInformation> biggestExternalExcludedHogFiles;
+    private Set<FileInformation> smallestExternalExcludedHogFiles;
+    private Set<FileInformation> biggestRootExcludedHogFiles;
+    private Set<FileInformation> smallestRootExcludedHogFiles;
     private int intFileCount;
     private int selectedSearchDirectory;
     private long timeToDelayRefresh;
     private boolean onOpenRefresh;
     private int researchFrequency;
 
-    private Settings(ArrayList<FileInformation> biggestExternalExcludedHogFiles,
-                     ArrayList<FileInformation> smallestExternalExcludedHogFiles,
-                     ArrayList<FileInformation> biggestRootExcludedHogFiles,
-                     ArrayList<FileInformation> smallestRootExcludedHogFiles, int intFileCount,
+    private Settings(Set<FileInformation> biggestExternalExcludedHogFiles,
+                     Set<FileInformation> smallestExternalExcludedHogFiles,
+                     Set<FileInformation> biggestRootExcludedHogFiles,
+                     Set<FileInformation> smallestRootExcludedHogFiles, int intFileCount,
                      int selectedSearchDirectory, long timeToDelayRefresh,
                      boolean onOpenRefresh, int researchFrequency) {
         super();
@@ -81,9 +80,9 @@ public class Settings implements Serializable, Parcelable {
             if ((instance = (Settings) FileIO.readObject(
                     Constants.SETTINGS_FILE, MainActivity.getFilePath())) == null) {
                 Log.i(TAG, "FileIO.readSettings(): null");
-                instance = new Settings(new ArrayList<FileInformation>(),
-                        new ArrayList<FileInformation>(), new ArrayList<FileInformation>(),
-                        new ArrayList<FileInformation>(), Constants.STARTING_FILE_COUNT,
+                instance = new Settings(new HashSet<FileInformation>(),
+                        new HashSet<FileInformation>(), new HashSet<FileInformation>(),
+                        new HashSet<FileInformation>(), Constants.STARTING_FILE_COUNT,
                         Settings.EXTERNAL_DIRECTORY, Settings.DAY_IN_MILLI,
                         false, Settings.DAILY);
                 FileIO.writeObject(instance, Constants.SETTINGS_FILE,
@@ -99,45 +98,45 @@ public class Settings implements Serializable, Parcelable {
         return instance;
     }
 
-    public ArrayList<FileInformation> getBiggestExternalExcludedHogFiles() {
+    public Set<FileInformation> getBiggestExternalExcludedHogFiles() {
         return biggestExternalExcludedHogFiles;
     }
 
     public void setBiggestExternalExcludedHogFiles(
-            ArrayList<FileInformation> biggestExternalExcludedHogFiles) {
+            Set<FileInformation> biggestExternalExcludedHogFiles) {
         this.biggestExternalExcludedHogFiles = biggestExternalExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
     }
 
-    public ArrayList<FileInformation> getSmallestExternalExcludedHogFiles() {
+    public Set<FileInformation> getSmallestExternalExcludedHogFiles() {
         return smallestExternalExcludedHogFiles;
     }
 
     public void setSmallestExternalExcludedHogFiles(
-            ArrayList<FileInformation> smallestExternalExcludedHogFiles) {
+            Set<FileInformation> smallestExternalExcludedHogFiles) {
         this.smallestExternalExcludedHogFiles = smallestExternalExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
     }
 
-    public ArrayList<FileInformation> getBiggestRootExcludedHogFiles() {
+    public Set<FileInformation> getBiggestRootExcludedHogFiles() {
         return biggestRootExcludedHogFiles;
     }
 
     public void setBiggestRootExcludedHogFiles(
-            ArrayList<FileInformation> biggestRootExcludedHogFiles) {
+            Set<FileInformation> biggestRootExcludedHogFiles) {
         this.biggestRootExcludedHogFiles = biggestRootExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
     }
 
-    public ArrayList<FileInformation> getSmallestRootExcludedHogFiles() {
+    public Set<FileInformation> getSmallestRootExcludedHogFiles() {
         return smallestRootExcludedHogFiles;
     }
 
     public void setSmallestRootExcludedHogFiles(
-            ArrayList<FileInformation> smallestRootExcludedHogFiles) {
+            Set<FileInformation> smallestRootExcludedHogFiles) {
         this.smallestRootExcludedHogFiles = smallestRootExcludedHogFiles;
         FileIO.writeObject(instance, Constants.SETTINGS_FILE,
                 MainActivity.getFilePath());
@@ -201,10 +200,10 @@ public class Settings implements Serializable, Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeSerializable(biggestExternalExcludedHogFiles);
-        dest.writeSerializable(smallestExternalExcludedHogFiles);
-        dest.writeSerializable(biggestRootExcludedHogFiles);
-        dest.writeSerializable(smallestRootExcludedHogFiles);
+        dest.writeSerializable((Serializable) biggestExternalExcludedHogFiles);
+        dest.writeSerializable((Serializable) smallestExternalExcludedHogFiles);
+        dest.writeSerializable((Serializable) biggestRootExcludedHogFiles);
+        dest.writeSerializable((Serializable) smallestRootExcludedHogFiles);
         dest.writeInt(intFileCount);
         dest.writeInt(selectedSearchDirectory);
         dest.writeLong(timeToDelayRefresh);
@@ -224,12 +223,12 @@ public class Settings implements Serializable, Parcelable {
 
     @SuppressWarnings("unchecked")
     private Settings(Parcel in) {
-        biggestExternalExcludedHogFiles = (ArrayList<FileInformation>) in
+        biggestExternalExcludedHogFiles = (Set<FileInformation>) in
                 .readSerializable();
-        smallestExternalExcludedHogFiles = (ArrayList<FileInformation>) in
+        smallestExternalExcludedHogFiles = (Set<FileInformation>) in
                 .readSerializable();
-        biggestRootExcludedHogFiles = (ArrayList<FileInformation>) in.readSerializable();
-        smallestRootExcludedHogFiles = (ArrayList<FileInformation>) in.readSerializable();
+        biggestRootExcludedHogFiles = (Set<FileInformation>) in.readSerializable();
+        smallestRootExcludedHogFiles = (Set<FileInformation>) in.readSerializable();
         intFileCount = in.readInt();
         selectedSearchDirectory = in.readInt();
         timeToDelayRefresh = in.readLong();

@@ -6,12 +6,12 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Utility {
 
-    public static final String TAG = "Utility";
+    private static final String TAG = "Utility";
 
     // Constants
     private static final double KILOBYTES = 1024;
@@ -42,19 +42,7 @@ public class Utility {
             return roundTwoDecimals(size / GIGABYTES) + " GB";
     }
 
-    public static boolean isInExcludedHogFiles(File file,
-                                               ArrayList<File> excludedHogFiles) {
-        for (File excludedFile : excludedHogFiles) {
-            if (excludedFile.getAbsoluteFile().toString()
-                    .equals(file.getAbsoluteFile().toString())) {
-                Log.i(TAG, "Inside isInExcludedHogFiles if");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isInExcludedHogFiles(File file, List<FileInformation> excludedHogFiles) {
+    private static boolean isInExcludedHogFiles(File file, Set<FileInformation> excludedHogFiles) {
         for (FileInformation fileInformation : excludedHogFiles) {
             String excludedFile = fileInformation.getFolder() + File.separator + fileInformation.getName();
             if (excludedFile.equals(file.getAbsoluteFile().toString())) {
@@ -64,4 +52,35 @@ public class Utility {
         }
         return false;
     }
+
+    public static void searchFiles(File folder, List<FileInformation> hogFiles) {
+        if (folder.listFiles() != null) {
+            for (File file : folder.listFiles()) {
+                if (file.isFile()
+                        && ((Settings.getInstance().getSelectedSearchDirectory() == Settings.EXTERNAL_DIRECTORY && !Utility
+                        .isInExcludedHogFiles(file, Settings.getInstance().getBiggestExternalExcludedHogFiles()))
+                        || (Settings.getInstance().getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
+                        .isInExcludedHogFiles(file, Settings.getInstance().getSmallestExternalExcludedHogFiles()))
+                        || (Settings.getInstance().getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
+                        .isInExcludedHogFiles(file, Settings.getInstance().getBiggestRootExcludedHogFiles())) || (Settings.getInstance()
+                        .getSelectedSearchDirectory() == Settings.ROOT_DIRECTORY && !Utility
+                        .isInExcludedHogFiles(file, Settings.getInstance().getSmallestRootExcludedHogFiles())))) {
+
+                    FileInformation fileInformation = new FileInformation();
+                    fileInformation.setName(file.getName());
+                    fileInformation.setSize(file.length());
+                    fileInformation.setLastModified(file.lastModified());
+                    fileInformation.setFolder(file.getParentFile().getAbsolutePath());
+
+                    hogFiles.add(fileInformation);
+
+                } else {
+                    // Recurse directories
+                    if (file != null && file.exists() && file.canRead() && !file.isHidden())
+                        searchFiles(file, hogFiles);
+                }
+            }
+        }
+    }
+
 }

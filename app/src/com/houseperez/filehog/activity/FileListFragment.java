@@ -23,7 +23,9 @@ import com.houseperez.util.Settings;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FileListFragment extends ListFragment {
 
@@ -111,8 +113,8 @@ public class FileListFragment extends ListFragment {
     //Toast.makeText(context.getApplicationContext(), "Refreshing", Toast.LENGTH_SHORT).show();
     //  }
 
-    private List<FileInformation> removeExcludedFromHogFiles(List<FileInformation> excludedHogFiles) {
-        List<FileInformation> updatedHogFiles = new ArrayList<FileInformation>();
+    private Set<FileInformation> removeExcludedFromHogFiles(Set<FileInformation> excludedHogFiles) {
+        Set<FileInformation> updatedHogFiles = new HashSet<>();
         for (FileInformation fileInformation : hogFiles) {
             updatedHogFiles.add(fileInformation);
         }
@@ -157,23 +159,23 @@ public class FileListFragment extends ListFragment {
                         case Settings.EXTERNAL_DIRECTORY:
                             if (isBiggestFiles) {
                                 settings.getBiggestExternalExcludedHogFiles().add(clickedFile);
-                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getBiggestExternalExcludedHogFiles());
-                                fileInformationAdapter.setFileInformations(updatedHogFiles);
+                                Set<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getBiggestExternalExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(new ArrayList<>(updatedHogFiles));
                             } else {
                                 settings.getSmallestExternalExcludedHogFiles().add(clickedFile);
-                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getSmallestExternalExcludedHogFiles());
-                                fileInformationAdapter.setFileInformations(updatedHogFiles);
+                                Set<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getSmallestExternalExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(new ArrayList<>(updatedHogFiles));
                             }
                             break;
                         case Settings.ROOT_DIRECTORY:
                             if (isBiggestFiles) {
                                 settings.getBiggestRootExcludedHogFiles().add(clickedFile);
-                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getBiggestRootExcludedHogFiles());
-                                fileInformationAdapter.setFileInformations(updatedHogFiles);
+                                Set<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getBiggestRootExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(new ArrayList<>(updatedHogFiles));
                             } else {
                                 settings.getSmallestRootExcludedHogFiles().add(clickedFile);
-                                List<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getSmallestRootExcludedHogFiles());
-                                fileInformationAdapter.setFileInformations(updatedHogFiles);
+                                Set<FileInformation> updatedHogFiles = removeExcludedFromHogFiles(settings.getSmallestRootExcludedHogFiles());
+                                fileInformationAdapter.setFileInformations(new ArrayList<>(updatedHogFiles));
                             }
                             break;
                     }
